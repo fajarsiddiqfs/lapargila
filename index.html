@@ -927,11 +927,412 @@
     })();
 
     // ══════════════════════════════════════════════════════════════
-    // LAPARGILA LOGIC START
+    // LAPARGILA LOGIC START — powered by Overpass API (OpenStreetMap, FREE)
     // ══════════════════════════════════════════════════════════════
 
-    // ── DATASET ───────────────────────────────────────────────────
-    // 45 hardcoded spots around KL/Selangor
+    // ── KEYWORD → OSM CUISINE/NAME TAG MAP ───────────────────────
+    // Maps user search terms to OpenStreetMap cuisine tags
+    const KEYWORD_MAP = {
+      "food":        null,           // null = all restaurants nearby
+      "mamak":       "indian|nasi_kandar|mamak",
+      "nasi lemak":  "nasi_lemak|malaysian",
+      "burger":      "burger",
+      "cafe":        "cafe|coffee_shop",
+      "tomyam":      "thai|tom_yam",
+      "shellout":    "seafood",
+      "chinese":     "chinese",
+      "sup":         "soup|malaysian",
+      "satay":       "satay|malaysian",
+      "dessert":     "dessert|ice_cream|cake",
+      "western":     "american|western|steak",
+      "roti canai":  "indian|nasi_kandar",
+      "nasi arab":   "arab|middle_eastern|kebab",
+      "mee tarik":   "noodle|chinese|malaysian",
+    };
+
+    // ── VIBE LINES PER CATEGORY ───────────────────────────────────
+    const VIBE_LINES = {
+      "mamak":      ["24 jam bro. Teh tarik dia confirm gila sedap.","Mamak vibes, mee goreng confirm ada.","Port lepak malam sampai subuh."],
+      "nasi lemak": ["Sambal dia pekat. Pagi-pagi confirm ramai.","Nasi lemak classic. Simple tapi tak pernah hampa.","Portion besar, harga murah. Wajib cuba."],
+      "burger":     ["Smash atau bakar — memang ngam lapar malam.","Burger tepi jalan level lain.","Baru bukak dah queue. Korang tahu kenapa."],
+      "cafe":       ["Healing jap dari dunia yang gila ni.","Coffee dia strong. WiFi ada. Duduk lama pun okay.","Aesthetic level up. Dating pun cun kat sini."],
+      "tomyam":     ["Pedas dia bukan main-main. Bawak tissue.","Tomyam seafood fresh. Peluh confirm keluar.","Kuah dia kaw gila. Nasi tambah mesti."],
+      "shellout":   ["Makan tangan. Paling syok lepak member ramai.","Seafood fresh. Order banyak-banyak.","Ketam dia besar gila. Worth every sen."],
+      "chinese":    ["Wok hei dia level dewa. Queue awal.","Kopitiam vibes. Roti bakar mentega confirm ada.","Classic chinese food. Sedap dari zaman moyang."],
+      "sup":        ["Sup gearbox pukul 2 pagi? Ni lah jawapan.","Kuah dia pekat, kenyang padu.","Makan malam perfect. Portion memang besar."],
+      "satay":      ["Sos kacang dia pekat sempurna. Cucuk banyak-banyak.","Satay bakar depan mata. Bau dia dah buat lapar.","Confirm repeat order. Satu cucuk tak cukup."],
+      "dessert":    ["Sweet fix lepas makan. Confirm viral TikTok.","Ice cream atau cendol — both pun win.","Dessert level artisan. Gram dulu, makan kemudian."],
+      "western":    ["Portion tak masuk akal besarnya. Value gila.","Western murah tapi rasa macam fine dining.","Chicken chop dia crispy luar, juicy dalam."],
+      "default":    ["Hidden gem area ni. Orang local je tahu.","Member repeat sini setiap minggu. Confirm best.","Tak pernah hampa. Sedap consistently."],
+    };
+
+    function getVibe(cuisine) {
+      const key = Object.keys(VIBE_LINES).find(k => cuisine && cuisine.toLowerCase().includes(k));
+      const lines = VIBE_LINES[key] || VIBE_LINES["default"];
+      return lines[Math.floor(Math.random() * lines.length)];
+    }
+
+    // ── PRICE GUESS BY CUISINE ────────────────────────────────────
+    function guessPrice(cuisine, name) {
+      if (!cuisine && !name) return "RM5–20";
+      const c = (cuisine || "").toLowerCase();
+      const n = (name || "").toLowerCase();
+      if (c.includes("fine") || n.includes("premium")) return "RM40–80";
+      if (c.includes("cafe") || c.includes("coffee")) return "RM12–28";
+      if (c.includes("seafood") || c.includes("shellout")) return "RM30–70";
+      if (c.includes("burger")) return "RM8–18";
+      if (c.includes("indian") || c.includes("mamak")) return "RM6–15";
+      if (c.includes("thai")) return "RM15–35";
+      if (c.includes("dessert") || c.includes("ice_cream")) return "RM5–15";
+      return "RM8–20";
+    }
+
+    // ── CATEGORY EMOJI ────────────────────────────────────────────
+    const CUISINE_EMOJI = {
+      burger:"🍔", indian:"🍛", nasi_kandar:"🍛", mamak:"🍽️",
+      cafe:"☕", coffee_shop:"☕", thai:"🌶️", tom_yam:"🌶️",
+      seafood:"🦐", chinese:"🥢", dessert:"🧁", ice_cream:"🍦",
+      cake:"🎂", american:"🍟", western:"🍟", steak:"🥩",
+      soup:"🥣", satay:"🍢", malaysian:"🍚", nasi_lemak:"🍚",
+      arab:"🍖", middle_eastern:"🍖", kebab:"🍢", noodle:"🍜",
+      restaurant:"🍴",
+    };
+
+    function getEmoji(cuisine) {
+      if (!cuisine) return "🍴";
+      const c = cuisine.toLowerCase().replace(/;.*/,"").trim();
+      return CUISINE_EMOJI[c] || "🍴";
+    }
+
+    // ── STATE ─────────────────────────────────────────────────────
+    let userLat = null;
+    let userLng = null;
+    let activeKeyword = "food";
+    let activeMood    = null;
+    let lastResults   = [];
+
+    // ── HAVERSINE ─────────────────────────────────────────────────
+    function haversine(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2
+              + Math.cos(lat1 * Math.PI/180)
+              * Math.cos(lat2 * Math.PI/180)
+              * Math.sin(dLng/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function fmtDist(d) {
+      return d < 1 ? (d * 1000).toFixed(0) + "m" : d.toFixed(1) + "km";
+    }
+
+    // ── OVERPASS API — fetch real restaurants near user ───────────
+    async function fetchNearby(lat, lng, keyword) {
+      const radius = 2000; // 2km default
+      const cuisineTag = KEYWORD_MAP[keyword] || null;
+
+      let filter = "";
+      if (cuisineTag) {
+        // cuisine tag match OR name contains keyword
+        filter = `["amenity"="restaurant"]["cuisine"~"${cuisineTag}",i]`;
+      } else {
+        filter = `["amenity"~"restaurant|cafe|fast_food|food_court"]`;
+      }
+
+      // Also search by name for free-text like "satay", "mamak"
+      const nameFilter = (!cuisineTag && keyword && keyword !== "food")
+        ? `\n  node["name"~"${keyword}",i](around:${radius},${lat},${lng});
+  way["name"~"${keyword}",i](around:${radius},${lat},${lng});`
+        : "";
+
+      const query = `
+[out:json][timeout:15];
+(
+  node${filter}(around:${radius},${lat},${lng});
+  way${filter}(around:${radius},${lat},${lng});${nameFilter}
+);
+out center 30;`;
+
+      const url = "https://overpass-api.de/api/interpreter";
+      const res = await fetch(url, {
+        method: "POST",
+        body: "data=" + encodeURIComponent(query),
+      });
+
+      if (!res.ok) throw new Error("Overpass API gagal");
+      const json = await res.json();
+      return json.elements || [];
+    }
+
+    // ── PARSE OSM ELEMENTS INTO CARDS ────────────────────────────
+    function parseOSM(elements, lat, lng) {
+      return elements
+        .map(el => {
+          const tags = el.tags || {};
+          const name = tags.name || tags["name:en"] || tags["name:ms"] || null;
+          if (!name) return null; // skip unnamed
+          const elLat = el.lat || el.center?.lat;
+          const elLng = el.lon || el.center?.lon;
+          if (!elLat || !elLng) return null;
+          const dist = haversine(lat, lng, elLat, elLng);
+          const cuisine = tags.cuisine || tags.amenity || "";
+          return {
+            name,
+            lat: elLat,
+            lng: elLng,
+            dist,
+            cuisine,
+            category: cuisine.split(";")[0].replace(/_/g," ") || "restoran",
+            price: guessPrice(cuisine, name),
+            vibe: getVibe(cuisine),
+            emoji: getEmoji(cuisine),
+            mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&location=${elLat},${elLng}`,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.dist - b.dist);
+    }
+
+    // ── RESULT ENGINE — pick 3 from real data ─────────────────────
+    function pickThree(places) {
+      if (!places.length) return [];
+      const used = new Set();
+
+      // 1: nearest
+      const nearest = places[0];
+      used.add(nearest.name);
+
+      // 2: cheapest guess (lowest RM number)
+      const byPrice = [...places].sort((a, b) => {
+        const pa = parseInt(a.price.replace(/[^0-9]/g, "")) || 999;
+        const pb = parseInt(b.price.replace(/[^0-9]/g, "")) || 999;
+        return pa - pb;
+      });
+      const cheapest = byPrice.find(r => !used.has(r.name)) || byPrice[0];
+      used.add(cheapest.name);
+
+      // 3: random from rest
+      const rest = places.filter(r => !used.has(r.name));
+      const gem = rest.length
+        ? rest[Math.floor(Math.random() * Math.min(rest.length, 10))]
+        : places[Math.floor(Math.random() * places.length)];
+
+      return [
+        { ...nearest,  label: "Dekat Gila Dengan Kau", labelEmoji: "📍" },
+        { ...cheapest, label: "Jimat Tapi Sedap",       labelEmoji: "💸" },
+        { ...gem,      label: "Bedal Je Ni",            labelEmoji: "🎲" },
+      ];
+    }
+
+    // ── RENDER RESULTS ────────────────────────────────────────────
+    function renderResults(results) {
+      lastResults = results;
+      const container = document.getElementById('results');
+      const header    = document.getElementById('results-header');
+      const titleEl   = document.getElementById('results-title');
+      const countEl   = document.getElementById('results-count');
+      const empty     = document.getElementById('empty');
+      const stateMsg  = document.getElementById('state-msg');
+      const poweredBy = document.getElementById('powered-by');
+
+      stateMsg.style.display  = "none";
+      empty.style.display     = "none";
+      header.style.display    = "flex";
+      poweredBy.style.display = "block";
+      poweredBy.textContent   = "✦ lapargila — data sebenar dekat kau via OpenStreetMap";
+
+      titleEl.textContent = activeKeyword && activeKeyword !== "food"
+        ? activeKeyword.charAt(0).toUpperCase() + activeKeyword.slice(1) + " Dekat Kau"
+        : "Port Makan Kau";
+      countEl.textContent = results.length + " cadangan";
+
+      container.innerHTML = "";
+      results.forEach((r, i) => {
+        const card = document.createElement('div');
+        card.className = "card" + (i === 0 ? " featured" : "");
+        card.style.animationDelay = (i * 0.08) + "s";
+
+        card.innerHTML = `
+          <div class="card-img">
+            <div class="card-img-placeholder">
+              <span class="placeholder-emoji">${r.emoji}</span>
+              <span class="placeholder-text">${r.category}</span>
+            </div>
+            <div class="card-badges">
+              <div class="badge-left">
+                <span class="badge badge-featured">${r.labelEmoji} ${r.label}</span>
+              </div>
+              <span class="badge-dist">📍 ${fmtDist(r.dist)}</span>
+            </div>
+            <div class="card-img-name">${r.name}</div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="cuisine-pill">${r.category}</span>
+              <span class="vicinity-text">${r.price}</span>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text-2);line-height:1.55;margin-bottom:12px;transition:color 0.22s">${r.vibe}</p>
+            <div class="card-actions">
+              <a class="action-btn maps-btn" href="${r.mapsUrl}" target="_blank" rel="noopener noreferrer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Buka Maps
+              </a>
+              <button class="action-btn phone-btn" onclick="reshuffleResults()" title="Cuba lain">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // ── UI HELPERS ────────────────────────────────────────────────
+    const LOADING_LINES = [
+      "Cari port makan padu dekat kau 🍜",
+      "Sekejap, tengah scan port sedap 👀",
+      "Tengah fikir apa ngam dengan mood kau…",
+      "Sikit je lagi, confirm port paling best 🔥",
+    ];
+    let loadingIdx = 0, loadingInterval = null;
+
+    function showLoading() {
+      const el = document.getElementById('state-msg');
+      document.getElementById('results-header').style.display = "none";
+      document.getElementById('empty').style.display          = "none";
+      document.getElementById('results').innerHTML            = "";
+      loadingIdx = 0;
+      el.className = "";
+      el.innerHTML = `
+        <div class="spinner-wrap"><div class="spinner"></div></div>
+        <div class="state-title" id="loading-line">${LOADING_LINES[0]}</div>
+      `;
+      el.style.display = "block";
+      clearInterval(loadingInterval);
+      loadingInterval = setInterval(() => {
+        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
+        const line = document.getElementById('loading-line');
+        if (line) line.textContent = LOADING_LINES[loadingIdx];
+      }, 1200);
+    }
+
+    function showMsg(type, icon, title, sub) {
+      clearInterval(loadingInterval);
+      const el = document.getElementById('state-msg');
+      el.className = type;
+      el.innerHTML = `
+        <span class="state-icon">${icon}</span>
+        <div class="state-title">${title}</div>
+        <p class="state-sub">${sub.replace(/\n/g, '<br>')}</p>
+      `;
+      el.style.display = "block";
+    }
+
+    function showError(msg) { showMsg("error", "😭", "Alamak!", msg); }
+
+    // ── RESHUFFLE ─────────────────────────────────────────────────
+    let _lastPool = [];
+    function reshuffleResults() {
+      if (!_lastPool.length) return;
+      // Shuffle the pool differently and pick new 3
+      const shuffled = [..._lastPool].sort(() => Math.random() - 0.5);
+      renderResults(pickThree(shuffled));
+    }
+
+    // ── GEOLOCATION ───────────────────────────────────────────────
+    function getLocation(callback) {
+      if (!navigator.geolocation) {
+        userLat = 3.1478; userLng = 101.7001;
+        callback();
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          userLat = pos.coords.latitude;
+          userLng = pos.coords.longitude;
+          document.getElementById('location-text').textContent = "Kawasan Kau";
+          callback();
+        },
+        () => {
+          userLat = 3.1478; userLng = 101.7001;
+          document.getElementById('location-text').textContent = "KL (default)";
+          callback();
+        },
+        { timeout: 8000, enableHighAccuracy: false }
+      );
+    }
+
+    // ── MAIN SEARCH ───────────────────────────────────────────────
+    async function doSearch() {
+      showLoading();
+      try {
+        const elements = await fetchNearby(userLat, userLng, activeKeyword);
+        clearInterval(loadingInterval);
+
+        if (!elements.length) {
+          showMsg("error", "🤔", "Takde result bro",
+            "Takde tempat makan jumpa dalam 2km.\nCuba keyword lain atau gerak sikit.");
+          return;
+        }
+
+        const places = parseOSM(elements, userLat, userLng);
+        if (!places.length) {
+          showMsg("error", "😅", "Hmm takde nama pun",
+            "Jumpa spots tapi takde nama kedai.\nCuba filter lain.");
+          return;
+        }
+
+        _lastPool = places;
+        renderResults(pickThree(places));
+
+      } catch (err) {
+        clearInterval(loadingInterval);
+        showError("Connection problem. Check internet kau pastu cuba lagi.");
+      }
+    }
+
+    // ── WIRE BUTTONS ──────────────────────────────────────────────
+    const searchBtn   = document.getElementById('search-btn');
+    const keywordInput = document.getElementById('keyword');
+
+    searchBtn.addEventListener('click', () => {
+      activeKeyword = keywordInput.value.trim().toLowerCase() || "food";
+      doSearch();
+    });
+
+    keywordInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        activeKeyword = keywordInput.value.trim().toLowerCase() || "food";
+        doSearch();
+      }
+    });
+
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeKeyword = chip.dataset.kw || "food";
+        keywordInput.value = "";
+        doSearch();
+      });
+    });
+
+    function quickSearch(kw) {
+      activeKeyword = kw;
+      keywordInput.value = kw;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      doSearch();
+    }
+
+    // ── AUTO INIT ─────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+      document.getElementById('empty').style.display = "none";
+      showLoading();
+      getLocation(() => doSearch());
+    });
+
+    // PLACEHOLDER — kept so old references don't crash
     const RESTAURANTS = [
       // MAMAK / INDIAN MUSLIM
       { name:"Restoran Pelita Nasi Kandar", lat:3.1580, lng:101.7069, category:"mamak", price:"RM8–15",  vibe:"Mamak klasik 24 jam. Teh tarik dia memang gila sedap." },
@@ -1007,369 +1408,6 @@
       { name:"Limapulo",                    lat:3.1265, lng:101.6598, category:"western", price:"RM25–45", vibe:"Brunch spot aesthetic. Dating pun cun. Weekend ramai." },
       { name:"The Social",                  lat:3.1488, lng:101.7009, category:"western", price:"RM22–40", vibe:"Port lepak malam, ada drinks. Vibe dia chill gila." },
     ];
-
-    // ── MOOD CATEGORIES ───────────────────────────────────────────
-    const MOODS = {
-      "🥵 Pedas Gila":        ["tomyam","mamak"],
-      "💸 Poket Nipis":       ["nasi lemak","roti canai","mamak","nasi campur"],
-      "🌙 Makan Tengah Malam":["mamak","burger","sup"],
-      "🫠 Healing Jap":       ["cafe","dessert"],
-      "🍚 Kenyang Padu":      ["nasi campur","western","nasi arab","shellout","sup"],
-      "⚡ Cepat Lah Lapar":   ["burger","mamak","roti canai","chinese"],
-      "❤️ Dating Cun":        ["cafe","western","thai"],
-      "🤤 Viral TikTok":      ["dessert","burger","cafe"],
-      "🧃 Lepak Member":      ["mamak","shellout","satay","kopitiam"],
-    };
-
-    // ── STATE ─────────────────────────────────────────────────────
-    let userLat = null;
-    let userLng = null;
-    let activeKeyword = "food";
-    let activeMood    = null;
-    let lastResults   = [];
-
-    // ── HAVERSINE ─────────────────────────────────────────────────
-    function haversine(lat1, lng1, lat2, lng2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLng = (lng2 - lng1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2
-              + Math.cos(lat1 * Math.PI/180)
-              * Math.cos(lat2 * Math.PI/180)
-              * Math.sin(dLng/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    function fmtDist(d) {
-      return d < 1 ? (d*1000).toFixed(0)+"m" : d.toFixed(1)+"km";
-    }
-
-    // ── GEOLOCATION ───────────────────────────────────────────────
-    function getLocation(callback) {
-      if (!navigator.geolocation) {
-        showError("Browser kau tak support GPS. Cuba browser lain.");
-        return;
-      }
-      showLoading();
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          userLat = pos.coords.latitude;
-          userLng = pos.coords.longitude;
-          document.getElementById('location-text').textContent = "Kawasan Kau";
-          callback();
-        },
-        err => {
-          // Fallback: default to KL city centre
-          userLat = 3.1478;
-          userLng = 101.7001;
-          document.getElementById('location-text').textContent = "KL (default)";
-          showMsg("info", "📍", "On location jap 😭",
-            "Tak dapat detect lokasi kau. Guna KL centre je dulu.\nBagi permission location untuk result lebih tepat.");
-          setTimeout(() => callback(), 1500);
-        },
-        { timeout: 8000, enableHighAccuracy: false }
-      );
-    }
-
-    // ── MOOD FILTERS ──────────────────────────────────────────────
-    function filterByMood(mood) {
-      const cats = MOODS[mood] || [];
-      return RESTAURANTS.filter(r => cats.includes(r.category));
-    }
-
-    function filterByKeyword(kw) {
-      if (!kw || kw === "food") return RESTAURANTS;
-      const q = kw.toLowerCase();
-      return RESTAURANTS.filter(r =>
-        r.name.toLowerCase().includes(q) ||
-        r.category.toLowerCase().includes(q) ||
-        r.vibe.toLowerCase().includes(q)
-      );
-    }
-
-    // ── RESULT ENGINE ─────────────────────────────────────────────
-    function generateResults(pool) {
-      if (!pool || pool.length === 0) pool = RESTAURANTS;
-
-      // Attach distance to each
-      let withDist = pool.map(r => ({
-        ...r,
-        dist: haversine(userLat, userLng, r.lat, r.lng)
-      }));
-
-      // Filter by radius; expand if too few
-      let nearby = withDist.filter(r => r.dist <= 5);
-      if (nearby.length < 3) nearby = withDist.filter(r => r.dist <= 10);
-      if (nearby.length < 3) nearby = withDist; // use all if still not enough
-
-      nearby.sort((a,b) => a.dist - b.dist);
-
-      const used = new Set();
-
-      // Pick 1: nearest
-      const nearest = nearby[0];
-      used.add(nearest.name);
-
-      // Pick 2: cheapest (lowest starting price number)
-      const byPrice = [...nearby].sort((a,b) => {
-        const pa = parseInt(a.price.replace(/[^0-9]/g, '')) || 999;
-        const pb = parseInt(b.price.replace(/[^0-9]/g, '')) || 999;
-        return pa - pb;
-      });
-      let cheapest = byPrice.find(r => !used.has(r.name));
-      if (!cheapest) cheapest = byPrice[0];
-      used.add(cheapest.name);
-
-      // Pick 3: random hidden gem
-      const remaining = nearby.filter(r => !used.has(r.name));
-      const gem = remaining.length
-        ? remaining[Math.floor(Math.random() * remaining.length)]
-        : nearby[Math.floor(Math.random() * nearby.length)];
-
-      return [
-        { ...nearest,  label: "Dekat Gila Dengan Kau",  labelEmoji: "📍" },
-        { ...cheapest, label: "Jimat Tapi Sedap",        labelEmoji: "💸" },
-        { ...gem,      label: "Bedal Je Ni",             labelEmoji: "🎲" },
-      ];
-    }
-
-    // ── RENDER RESULTS ────────────────────────────────────────────
-    const CATEGORY_EMOJI = {
-      mamak:"🍽️", "nasi lemak":"🍚", burger:"🍔", tomyam:"🌶️",
-      cafe:"☕", chinese:"🥢", kopitiam:"☕", sup:"🥣",
-      satay:"🍢", "mee tarik":"🍜", western:"🍟", shellout:"🦐",
-      dessert:"🧁", "roti canai":"🫓", "nasi campur":"🍱",
-      "nasi arab":"🍖", thai:"🫕", "nasi kandar":"🍛"
-    };
-
-    function renderResults(results) {
-      lastResults = results;
-      const container = document.getElementById('results');
-      const header    = document.getElementById('results-header');
-      const titleEl   = document.getElementById('results-title');
-      const countEl   = document.getElementById('results-count');
-      const empty     = document.getElementById('empty');
-      const stateMsg  = document.getElementById('state-msg');
-      const poweredBy = document.getElementById('powered-by');
-
-      stateMsg.style.display  = "none";
-      empty.style.display     = "none";
-      header.style.display    = "flex";
-      poweredBy.style.display = "block";
-      poweredBy.textContent   = "✦ lapargila — cepat, local, tak serabut";
-
-      titleEl.textContent = activeMood ? activeMood : "Port Makan Kau";
-      countEl.textContent = results.length + " cadangan";
-
-      container.innerHTML = "";
-      results.forEach((r, i) => {
-        const card = document.createElement('div');
-        card.className = "card" + (i === 0 ? " featured" : "");
-        card.style.animationDelay = (i * 0.08) + "s";
-
-        const emoji = CATEGORY_EMOJI[r.category] || "🍴";
-        // Use the searched keyword for Maps, fallback to category
-        const mapsQuery = (activeKeyword && activeKeyword !== "food") ? activeKeyword : r.category;
-        const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(mapsQuery + ' near me')}/@${userLat},${userLng},14z/data=!3m1!4b1`;
-
-        card.innerHTML = `
-          <div class="card-img">
-            <div class="card-img-placeholder">
-              <span class="placeholder-emoji">${emoji}</span>
-              <span class="placeholder-text">${r.category}</span>
-            </div>
-            <div class="card-badges">
-              <div class="badge-left">
-                <span class="badge badge-featured">${r.labelEmoji} ${r.label}</span>
-              </div>
-              <span class="badge-dist">📍 ${fmtDist(r.dist)}</span>
-            </div>
-            <div class="card-img-name">${r.name}</div>
-          </div>
-          <div class="card-body">
-            <div class="card-row">
-              <span class="cuisine-pill">${r.category}</span>
-              <span class="vicinity-text">${r.price}</span>
-            </div>
-            <p style="font-size:0.82rem;color:var(--text-2);line-height:1.55;margin-bottom:12px;transition:color 0.22s">${r.vibe}</p>
-            <div class="card-actions">
-              <a class="action-btn maps-btn"
-                 href="${mapsUrl}"
-                 target="_blank" rel="noopener noreferrer">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Cari Dekat Kau
-              </a>
-              <button class="action-btn phone-btn" onclick="reshuffleOne(${i})" title="Cuba lain">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
-              </button>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    // ── UI STATE HELPERS ──────────────────────────────────────────
-    const LOADING_LINES = [
-      "Cari port makan padu dekat kau 🍜",
-      "Sekejap, tengah scan port sedap 👀",
-      "Tengah fikir apa ngam dengan mood kau…",
-      "Sikit je lagi, nak confirm port paling best 🔥",
-    ];
-    let loadingIdx = 0;
-    let loadingInterval = null;
-
-    function showLoading() {
-      const el = document.getElementById('state-msg');
-      const container = document.getElementById('results');
-      const header    = document.getElementById('results-header');
-      const empty     = document.getElementById('empty');
-
-      header.style.display    = "none";
-      empty.style.display     = "none";
-      container.innerHTML     = "";
-
-      loadingIdx = 0;
-      el.className = "";
-      el.innerHTML = `
-        <div class="spinner-wrap"><div class="spinner"></div></div>
-        <div class="state-title" id="loading-line">${LOADING_LINES[0]}</div>
-      `;
-      el.style.display = "block";
-
-      clearInterval(loadingInterval);
-      loadingInterval = setInterval(() => {
-        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
-        const line = document.getElementById('loading-line');
-        if (line) line.textContent = LOADING_LINES[loadingIdx];
-      }, 1200);
-    }
-
-    function showMsg(type, icon, title, sub) {
-      clearInterval(loadingInterval);
-      const el = document.getElementById('state-msg');
-      el.className = type;
-      el.innerHTML = `
-        <span class="state-icon">${icon}</span>
-        <div class="state-title">${title}</div>
-        <p class="state-sub">${sub.replace(/\n/g,'<br>')}</p>
-      `;
-      el.style.display = "block";
-    }
-
-    function showError(msg) {
-      showMsg("error", "😭", "Alamak!", msg);
-    }
-
-    // ── RESHUFFLE ONE CARD ────────────────────────────────────────
-    function reshuffleOne(idx) {
-      const pool = activeMood ? filterByMood(activeMood) : filterByKeyword(activeKeyword);
-      const withDist = pool.map(r => ({
-        ...r, dist: haversine(userLat, userLng, r.lat, r.lng)
-      })).sort((a,b) => a.dist - b.dist);
-
-      const usedNames = lastResults.map(r => r.name);
-      const candidates = withDist.filter(r => !usedNames.includes(r.name) || r.name === lastResults[idx].name);
-      const newPick = candidates[Math.floor(Math.random() * candidates.length)] || withDist[0];
-
-      const labels = [
-        { label:"Dekat Gila Dengan Kau", labelEmoji:"📍" },
-        { label:"Jimat Tapi Sedap",       labelEmoji:"💸" },
-        { label:"Bedal Je Ni",            labelEmoji:"🎲" },
-      ];
-      lastResults[idx] = { ...newPick, ...labels[idx] };
-      renderResults(lastResults);
-    }
-
-    // ── FULL RUN ──────────────────────────────────────────────────
-    function runEngine(pool) {
-      clearInterval(loadingInterval);
-      const results = generateResults(pool);
-      renderResults(results);
-    }
-
-    function doSearch() {
-      activeMood = null;
-      const pool = filterByKeyword(activeKeyword);
-      if (userLat !== null) {
-        showLoading();
-        setTimeout(() => runEngine(pool), 800);
-      } else {
-        getLocation(() => {
-          setTimeout(() => runEngine(pool), 600);
-        });
-      }
-    }
-
-    // ── WIRE SEARCH BUTTON ────────────────────────────────────────
-    const searchBtn = document.getElementById('search-btn');
-    const keywordInput = document.getElementById('keyword');
-
-    searchBtn.addEventListener('click', () => {
-      const val = keywordInput.value.trim();
-      activeKeyword = val || "food";
-      doSearch();
-    });
-
-    keywordInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const val = keywordInput.value.trim();
-        activeKeyword = val || "food";
-        doSearch();
-      }
-    });
-
-    // ── WIRE FILTER CHIPS ─────────────────────────────────────────
-    document.querySelectorAll('.filter-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        activeKeyword = chip.dataset.kw || "food";
-        activeMood    = null;
-        keywordInput.value = "";
-        doSearch();
-      });
-    });
-
-    // ── WIRE QUICK PICKS ──────────────────────────────────────────
-    function quickSearch(kw) {
-      activeKeyword = kw;
-      activeMood    = null;
-      keywordInput.value = kw;
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      doSearch();
-    }
-
-    // ── AUTO INIT on page load ────────────────────────────────────
-    window.addEventListener('load', () => {
-      // Hide empty, show loading spinner right away
-      document.getElementById('empty').style.display = "none";
-      showLoading();
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            userLat = pos.coords.latitude;
-            userLng = pos.coords.longitude;
-            document.getElementById('location-text').textContent = "Kawasan Kau";
-            runEngine(filterByKeyword("food"));
-          },
-          () => {
-            // Fallback to KL centre silently, still show results
-            userLat = 3.1478;
-            userLng = 101.7001;
-            document.getElementById('location-text').textContent = "KL (default)";
-            runEngine(filterByKeyword("food"));
-          },
-          { timeout: 6000, enableHighAccuracy: false }
-        );
-      } else {
-        userLat = 3.1478;
-        userLng = 101.7001;
-        document.getElementById('location-text').textContent = "KL (default)";
-        runEngine(filterByKeyword("food"));
-      }
-    });
 
     // ══════════════════════════════════════════════════════════════
     // LAPARGILA LOGIC END
