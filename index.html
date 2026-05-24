@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ms" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#ffffff" id="theme-meta"/>
+  <title>LaparGila — Cari Makan Sekarang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── LIGHT MODE (default) ───────────────────────────────────── */
+    :root,
+    [data-theme="light"] {
+      --bg:          #F7F5F2;
+      --surface:     #FFFFFF;
+      --card:        #FFFFFF;
+      --card-hover:  #F9F7F5;
+      --border:      rgba(0,0,0,0.07);
+      --border-md:   rgba(0,0,0,0.12);
+      --accent:      #FF6B35;
+      --accent-dim:  rgba(255,107,53,0.10);
+      --accent-glow: rgba(255,107,53,0.20);
+      --text:        #151515;
+      --text-2:      #6B6B6B;
+      --text-3:      #ABABAB;
+      --green:       #16A34A;
+      --green-dim:   rgba(22,163,74,0.10);
+      --red:         #DC2626;
+      --red-dim:     rgba(220,38,38,0.10);
+      --gold:        #B45309;
+      --gold-dim:    rgba(180,83,9,0.10);
+      --shadow:      0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+      --ad-bg:       #FFF3ED;
+      --ad-border:   rgba(255,107,53,0.25);
+      --ad-text:     #7C2D12;
+      --ad-subtext:  #C2410C;
+      --placeholder-bg: #F0EDE8;
+      --hero-glow:   rgba(255,107,53,0.12);
+    }
+
+    /* ── DARK MODE ──────────────────────────────────────────────── */
+    [data-theme="dark"] {
+      --bg:          #0f0f0f;
+      --surface:     #181818;
+      --card:        #1e1e1e;
+      --card-hover:  #252525;
+      --border:      rgba(255,255,255,0.07);
+      --border-md:   rgba(255,255,255,0.12);
+      --accent:      #FF6B35;
+      --accent-dim:  rgba(255,107,53,0.15);
+      --accent-glow: rgba(255,107,53,0.25);
+      --text:        #FAFAFA;
+      --text-2:      #A0A0A0;
+      --text-3:      #606060;
+      --green:       #34D399;
+      --green-dim:   rgba(52,211,153,0.12);
+      --red:         #F87171;
+      --red-dim:     rgba(248,113,113,0.12);
+      --gold:        #FCD34D;
+      --gold-dim:    rgba(252,211,77,0.12);
+      --shadow:      none;
+      --shadow-card: none;
+      --ad-bg:       rgba(255,107,53,0.08);
+      --ad-border:   rgba(255,107,53,0.2);
+      --ad-text:     #FAFAFA;
+      --ad-subtext:  #FF9A70;
+      --placeholder-bg: #2A2A2A;
+      --hero-glow:   rgba(255,107,53,0.18);
+    }
+
+    /* ── RESET ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    :root {
+      --r-sm:   10px;
+      --r-md:   16px;
+      --r-lg:   20px;
+      --r-xl:   28px;
+      --font:   'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      overflow-x: hidden;
+      /* push content below top ad bar */
+      padding-top: 44px;
+      /* push content above bottom ad bar + safe area */
+      padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+      transition: background 0.22s, color 0.22s;
+    }
+
+    /* ── AD BAR — SHARED ────────────────────────────────────────── */
+    .ad-bar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      z-index: 100;
+      background: var(--ad-bg);
+      border-color: var(--ad-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      font-family: var(--font);
+      transition: background 0.22s, border-color 0.22s;
+    }
+
+    /* ── AD BAR — TOP ───────────────────────────────────────────── */
+    .ad-bar-top {
+      top: 0;
+      height: 44px;
+      border-bottom: 1px solid var(--ad-border);
+    }
+
+    /* ── AD BAR — BOTTOM ────────────────────────────────────────── */
+    .ad-bar-bottom {
+      bottom: env(safe-area-inset-bottom, 0px);
+      height: 52px;
+      border-top: 1px solid var(--ad-border);
+    }
+
+    .ad-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      border: 1px solid var(--border-md);
+      border-radius: 4px;
+      padding: 2px 5px;
+      flex-shrink: 0;
+    }
+
+    .ad-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ad-text);
+      line-height: 1.3;
+      text-align: center;
+      flex: 1;
+    }
+
+    .ad-text strong {
+      color: var(--accent);
+    }
+
+    .ad-cta {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1.5px solid var(--accent);
+      border-radius: 99px;
+      padding: 4px 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .ad-cta:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── HERO HEADER ────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      padding: 24px 20px 0;
+      background: var(--surface);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: background 0.22s, box-shadow 0.22s;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -60px;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, var(--hero-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 8px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: var(--accent);
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      transition: color 0.22s;
+    }
+
+    .brand-name span { color: var(--accent); }
+
+    /* ── HERO RIGHT: location + theme toggle ────────────────────── */
+    .hero-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .location-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card);
+      border: 1px solid var(--border-md);
+      border-radius: 99px;
+      padding: 7px 12px 7px 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: default;
+      max-width: 120px;
+      transition: background 0.22s, border-color 0.22s;
+    }
+
+    .loc-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px var(--green-dim);
+    }
+
+    .loc-label {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    /* ── THEME TOGGLE ───────────────────────────────────────────── */
+    .theme-toggle {
+      width: 36px; height: 36px;
+      border-radius: 99px;
+      border: 1.5px solid var(--border-md);
+      background: var(--card);
+      color: var(--text-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:hover {
+      background: var(--accent-dim);
+      border-color: rgba(255,107,53,0.4);
+      color: var(--accent);
+      transform: rotate(15deg);
+    }
+
+    .theme-toggle svg { width: 16px; height: 16px; }
+
+    .icon-sun, .icon-moon { transition: opacity 0.18s; }
+    [data-theme="light"] .icon-moon { display: none; }
+    [data-theme="dark"]  .icon-sun  { display: none; }
+
+    /* ── HEADLINE / SUB ─────────────────────────────────────────── */
+    .hero-headline {
+      font-size: 1.65rem;
+      font-weight: 800;
+      line-height: 1.22;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+      transition: color 0.22s;
+    }
+
+    .hero-headline em { font-style: normal; color: var(--accent); }
+
+    .hero-sub {
+      font-size: 0.85rem;
+      color: var(--text-2);
+      font-weight: 400;
+      margin-bottom: 22px;
+      line-height: 1.5;
+      transition: color 0.22s;
+    }
+
+    /* ── SEARCH BAR ─────────────────────────────────────────────── */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      width: 18px; height: 18px;
+      opacity: 0.4;
+      pointer-events: none;
+      color: var(--text);
+    }
+
+    #keyword {
+      width: 100%;
+      background: var(--card);
+      border: 1.5px solid var(--border-md);
+      border-radius: var(--r-md);
+      padding: 13px 14px 13px 42px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.18s, background 0.18s, color 0.22s;
+    }
+
+    #keyword::placeholder { color: var(--text-3); font-weight: 400; }
+    #keyword:focus {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    #search-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-md);
+      padding: 13px 18px;
+      font-family: var(--font);
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.14s, opacity 0.14s, box-shadow 0.14s;
+      flex-shrink: 0;
+      box-shadow: 0 2px 12px rgba(255,107,53,0.30);
+    }
+
+    #search-btn:hover  { box-shadow: 0 4px 18px rgba(255,107,53,0.45); }
+    #search-btn:active { transform: scale(0.95); opacity: 0.85; }
+    #search-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── QUICK FILTERS ──────────────────────────────────────────── */
+    .filters-wrap {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 18px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .filters-wrap::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 7px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .filter-chip:hover, .filter-chip.active {
+      background: var(--accent-dim);
+      border-color: rgba(255,107,53,0.4);
+      color: var(--accent);
+    }
+
+    .filter-chip .chip-emoji { font-size: 0.9rem; }
+
+    /* ── SECTION HEADER ─────────────────────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 14px;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      transition: color 0.22s;
+    }
+
+    .section-count {
+      font-size: 0.75rem;
+      color: var(--text-2);
+      font-weight: 500;
+      background: var(--card);
+      border: 1px solid var(--border-md);
+      border-radius: 99px;
+      padding: 3px 10px;
+      transition: background 0.22s;
+    }
+
+    /* ── RESULTS ────────────────────────────────────────────────── */
+    #results {
+      padding: 0 12px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── CARD ───────────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      animation: riseIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      box-shadow: var(--shadow-card);
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(22px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .card:hover {
+      background: var(--card-hover);
+      border-color: var(--border-md);
+    }
+
+    .card.featured {
+      border-color: rgba(255,107,53,0.30);
+      box-shadow: 0 0 0 1px rgba(255,107,53,0.12), var(--shadow-card);
+    }
+
+    /* Card image */
+    .card-img {
+      position: relative;
+      height: 160px;
+      overflow: hidden;
+      background: var(--placeholder-bg);
+      transition: background 0.22s;
+    }
+
+    .card-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .card:hover .card-img img { transform: scale(1.04); }
+
+    /* Gradient overlay for image text readability */
+    .card-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* Placeholder (no photo) */
+    .card-img-placeholder {
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .placeholder-emoji { font-size: 2.4rem; }
+
+    .placeholder-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: capitalize;
+      letter-spacing: 0.04em;
+    }
+
+    /* Badges */
+    .card-badges {
+      position: absolute;
+      top: 10px; left: 10px; right: 10px;
+      display: flex;
+      gap: 6px;
+      z-index: 2;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .badge-left { display: flex; gap: 6px; }
+
+    .badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 4px 9px;
+      border-radius: 99px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .badge-featured {
+      background: rgba(252,211,77,0.22);
+      color: #B45309;
+      border: 1px solid rgba(180,83,9,0.3);
+    }
+
+    [data-theme="dark"] .badge-featured {
+      color: var(--gold);
+      border-color: rgba(252,211,77,0.3);
+    }
+
+    .badge-open {
+      background: rgba(22,163,74,0.15);
+      color: #16A34A;
+      border: 1px solid rgba(22,163,74,0.3);
+    }
+
+    [data-theme="dark"] .badge-open {
+      color: var(--green);
+    }
+
+    .badge-closed {
+      background: rgba(220,38,38,0.15);
+      color: #DC2626;
+      border: 1px solid rgba(220,38,38,0.25);
+    }
+
+    [data-theme="dark"] .badge-closed {
+      color: var(--red);
+    }
+
+    .badge-rating {
+      background: rgba(0,0,0,0.50);
+      color: #FCD34D;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .card-img-name {
+      position: absolute;
+      bottom: 10px; left: 14px; right: 14px;
+      z-index: 2;
+      font-size: 1.0rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+    }
+
+    /* Card body */
+    .card-body { padding: 12px 14px 14px; }
+
+    .card-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cuisine-pill {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    .vicinity-text {
+      font-size: 0.75rem;
+      color: var(--text-2);
+      font-weight: 400;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      flex: 1;
+      transition: color 0.22s;
+    }
+
+    /* Distance badge on card image */
+    .badge-dist {
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.15);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      white-space: nowrap;
+    }
+
+    /* Card action buttons row */
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border-md);
+      border-radius: var(--r-sm);
+      padding: 11px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      cursor: pointer;
+    }
+
+    .maps-btn { flex: 1; }
+    .phone-btn { flex-shrink: 0; padding: 11px 14px; }
+
+    .maps-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .phone-btn:hover {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .action-btn svg { flex-shrink: 0; }
+
+    /* ── STATES ─────────────────────────────────────────────────── */
+    #state-msg {
+      text-align: center;
+      padding: 60px 24px;
+      display: none;
+    }
+
+    .state-icon { font-size: 3rem; margin-bottom: 14px; display: block; }
+
+    .state-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      transition: color 0.22s;
+    }
+
+    .state-sub {
+      font-size: 0.82rem;
+      color: var(--text-2);
+      line-height: 1.5;
+      transition: color 0.22s;
+    }
+
+    #state-msg.error .state-title { color: var(--red); }
+
+    /* Spinner */
+    .spinner-wrap { margin-bottom: 20px; }
+
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── EMPTY STATE ────────────────────────────────────────────── */
+    #empty {
+      display: none;
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .empty-icon { font-size: 3.2rem; margin-bottom: 16px; }
+
+    .empty-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      transition: color 0.22s;
+    }
+
+    .empty-sub {
+      font-size: 0.82rem;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      transition: color 0.22s;
+    }
+
+    .quick-picks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .quick-pick {
+      background: var(--card);
+      border: 1px solid var(--border-md);
+      border-radius: 99px;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .quick-pick:hover {
+      background: var(--accent-dim);
+      border-color: rgba(255,107,53,0.35);
+      color: var(--accent);
+    }
+
+    /* ── POWERED BY ─────────────────────────────────────────────── */
+    #powered-by {
+      display: none;
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--text-3);
+      letter-spacing: 0.04em;
+      padding: 8px 20px 0;
+      transition: color 0.22s;
+    }
+
+    /* ── SECTION LABEL ──────────────────────────────────────────── */
+    #results-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ══ TOP AD BAR ════════════════════════════════════════════════ -->
+  <div class="ad-bar ad-bar-top">
+    <span class="ad-label">AD</span>
+    <span class="ad-text">🍔 <strong>Hungry? Get 20% off</strong> your first GrabFood order today</span>
+    <a class="ad-cta" href="#" target="_blank" rel="noopener noreferrer">Claim</a>
+  </div>
+
+  <!-- ══ HERO ══════════════════════════════════════════════════════ -->
+  <header class="hero">
+    <div class="hero-top">
+      <div class="brand">
+        <div class="brand-icon">🔥</div>
+        <span class="brand-name">Lapar<span>Gila</span></span>
+      </div>
+      <div class="hero-right">
+        <div class="location-pill">
+          <span class="loc-dot"></span>
+          <span class="loc-label" id="location-text">Mengesan…</span>
+        </div>
+        <!-- Theme toggle button -->
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode">
+          <!-- Sun icon (shown in dark mode) -->
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <!-- Moon icon (shown in light mode) -->
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-headline"><em>Korang Lapar Gila?</em></div>
+    <p class="hero-sub">Restoran buka sekarang, dalam 2km dari kau.</p>
+
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M13 13L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="keyword" placeholder="Cari: burger, nasi lemak, kopi…" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+      </div>
+      <button id="search-btn">Cari</button>
+    </div>
+
+    <div class="filters-wrap" id="filters">
+      <button class="filter-chip active" data-kw="food"><span class="chip-emoji">🍽️</span> Semua</button>
+      <button class="filter-chip" data-kw="nasi lemak"><span class="chip-emoji">🍚</span> Nasi</button>
+      <button class="filter-chip" data-kw="burger"><span class="chip-emoji">🍔</span> Burger</button>
+      <button class="filter-chip" data-kw="coffee"><span class="chip-emoji">☕</span> Kopi</button>
+      <button class="filter-chip" data-kw="chicken"><span class="chip-emoji">🍗</span> Chicken</button>
+      <button class="filter-chip" data-kw="seafood"><span class="chip-emoji">🦐</span> Seafood</button>
+      <button class="filter-chip" data-kw="chinese"><span class="chip-emoji">🥟</span> Chinese</button>
+      <button class="filter-chip" data-kw="indian"><span class="chip-emoji">🍛</span> Indian</button>
+      <button class="filter-chip" data-kw="pizza"><span class="chip-emoji">🍕</span> Pizza</button>
+    </div>
+  </header>
+
+  <!-- RESULTS SECTION -->
+  <div id="results-header" class="section-header">
+    <span class="section-title" id="results-title">Nearby</span>
+    <span class="section-count" id="results-count"></span>
+  </div>
+
+  <div id="powered-by"></div>
+
+  <!-- LOADING / ERROR -->
+  <div id="state-msg"></div>
+
+  <!-- EMPTY / WELCOME -->
+  <div id="empty">
+    <div class="empty-icon">🍴</div>
+    <div class="empty-title">Nak makan apa hari ni?</div>
+    <p class="empty-sub">Tekan kategori di atas atau taip<br>makanan yang kau nak.</p>
+    <div class="quick-picks">
+      <span class="quick-pick" onclick="quickSearch('nasi lemak')">🍚 Nasi Lemak</span>
+      <span class="quick-pick" onclick="quickSearch('mamak')">☕ Mamak</span>
+      <span class="quick-pick" onclick="quickSearch('burger')">🍔 Burger</span>
+      <span class="quick-pick" onclick="quickSearch('seafood')">🦐 Seafood</span>
+      <span class="quick-pick" onclick="quickSearch('ramen')">🍜 Ramen</span>
+    </div>
+  </div>
+
+  <!-- RESULTS LIST -->
+  <div id="results"></div>
+
+  <!-- ══ BOTTOM AD BAR ══════════════════════════════════════════════ -->
+  <div class="ad-bar ad-bar-bottom">
+    <span class="ad-label">AD</span>
+    <span class="ad-text">☕ <strong>Nespresso</strong> — Free machine with any pod subscription</span>
+    <a class="ad-cta" href="#" target="_blank" rel="noopener noreferrer">Tahu Lebih</a>
+  </div>
+
+  <script>
+    // ── THEME TOGGLE ──────────────────────────────────────────────
+    (function () {
+      const html   = document.documentElement;
+      const btn    = document.getElementById('theme-toggle');
+      const meta   = document.getElementById('theme-meta');
+
+      const saved  = localStorage.getItem('lapargila-theme') || 'light';
+      html.setAttribute('data-theme', saved);
+      meta.content = saved === 'dark' ? '#0f0f0f' : '#ffffff';
+
+      btn.addEventListener('click', () => {
+        const current = html.getAttribute('data-theme');
+        const next    = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        meta.content = next === 'dark' ? '#0f0f0f' : '#ffffff';
+        localStorage.setItem('lapargila-theme', next);
+      });
+    })();
+
+    // ══════════════════════════════════════════════════════════════
+    // LAPARGILA LOGIC START
+    // ══════════════════════════════════════════════════════════════
+
+    // ── DATASET ───────────────────────────────────────────────────
+    // 45 hardcoded spots around KL/Selangor
+    const RESTAURANTS = [
+      // MAMAK / INDIAN MUSLIM
+      { name:"Restoran Pelita Nasi Kandar", lat:3.1580, lng:101.7069, category:"mamak", price:"RM8–15",  vibe:"Mamak klasik 24 jam. Teh tarik dia memang gila sedap." },
+      { name:"Nasi Kandar Line Clear",      lat:3.1469, lng:101.6955, category:"mamak", price:"RM10–18", vibe:"Nasi kandar port orang tahu. Queue panjang tapi berbaloi." },
+      { name:"Restoran Kayu Nasi Kandar",   lat:3.1501, lng:101.7020, category:"mamak", price:"RM9–16",  vibe:"24 jam. Ko lapar pukul 3 pagi pun dia buka." },
+      { name:"Raju's Banana Leaf",          lat:3.1460, lng:101.6970, category:"mamak", price:"RM12–20", vibe:"Banana leaf padu. Lauk dia penuh sampai tak nampak daun." },
+      { name:"Anjappar Chettinad",          lat:3.1555, lng:101.7105, category:"mamak", price:"RM15–25", vibe:"Indian food level lain. Pedas dia bukan main-main." },
+
+      // NASI LEMAK
+      { name:"Village Park Restaurant",     lat:3.1234, lng:101.6345, category:"nasi lemak", price:"RM8–12",  vibe:"Nasi lemak ayam goreng paling trending KL. Queue mesti panjang." },
+      { name:"Nasi Lemak Wanjo",            lat:3.1488, lng:101.6935, category:"nasi lemak", price:"RM5–10",  vibe:"Murah gila. Nasi lemak basic tapi tak pernah hampa." },
+      { name:"Nasi Lemak Antarabangsa",     lat:3.1372, lng:101.6963, category:"nasi lemak", price:"RM6–11",  vibe:"24 jam. Sambal dia level dewa. Makan malam pun okay." },
+      { name:"Nasi Lemak Bumbung",          lat:3.1608, lng:101.7115, category:"nasi lemak", price:"RM5–9",   vibe:"Hidden gem kawasan Ampang. Orang local je tahu." },
+
+      // BURGER BAKAR
+      { name:"Burger Bakar Abang Burn",     lat:3.1312, lng:101.6877, category:"burger", price:"RM8–14",  vibe:"Burger bakar paling hype KL. Baru buka terus habis." },
+      { name:"Ramly Burger Uncle Ahmad",    lat:3.1456, lng:101.7234, category:"burger", price:"RM4–8",   vibe:"OG burger tepi jalan. Murah meriah. Portion memang besar." },
+      { name:"The Burger Lab",              lat:3.1180, lng:101.6760, category:"burger", price:"RM18–28", vibe:"Smash burger level artisan. Mahal sikit tapi worth it." },
+      { name:"Myeong Dong Burger",          lat:3.1502, lng:101.7010, category:"burger", price:"RM12–20", vibe:"Korean fusion burger. Instagrammable gila. Dating cun." },
+
+      // TOMYAM / THAI
+      { name:"Tomyam Seafood Pak Su",       lat:3.1688, lng:101.7045, category:"tomyam", price:"RM15–30", vibe:"Tomyam pedas gila. Sikit je kau dah peluh satu badan." },
+      { name:"Restoran Baan Thai",          lat:3.1225, lng:101.6598, category:"tomyam", price:"RM20–40", vibe:"Thai masak authentik. Sambal hijau dia buat ketagih." },
+      { name:"Thai Village",                lat:3.1490, lng:101.7180, category:"tomyam", price:"RM18–35", vibe:"Port lepak group besar. Order banyak-banyak." },
+
+      // CAFE / HEALING
+      { name:"VCR Cafe",                    lat:3.1425, lng:101.7102, category:"cafe", price:"RM15–30", vibe:"Aesthetic gila. Coffee dia strong. Perfect bila nak kerja." },
+      { name:"Feeka Coffee Roasters",       lat:3.1509, lng:101.7035, category:"cafe", price:"RM12–25", vibe:"Instagrammable. Kopi specialty. Healing jap dari kesibukan." },
+      { name:"Pulp by Papa Palheta",        lat:3.1388, lng:101.6960, category:"cafe", price:"RM12–22", vibe:"Coffee serious. Rasa macam duduk Europe sekejap." },
+      { name:"Butter + Beans",              lat:3.1233, lng:101.6355, category:"cafe", price:"RM20–35", vibe:"Brunch vibes. Portion besar. Instagrammable confirm." },
+      { name:"Percolate",                   lat:3.1580, lng:101.7265, category:"cafe", price:"RM15–28", vibe:"Hidden cafe best kat Ampang. Orang repeat sini selalu." },
+
+      // CHAR KUEY TEOW / KOPITIAM
+      { name:"CKT Ah Leng Georgetown",      lat:3.1356, lng:101.6895, category:"chinese", price:"RM8–14",  vibe:"Char kuey teow wok hei dia paling gila. Queue awal." },
+      { name:"Kedai Kopi Hong Ngek",        lat:3.1289, lng:101.6724, category:"kopitiam", price:"RM5–12",  vibe:"Kopitiam OG. Roti bakar mentega. Teh O ais limau best." },
+      { name:"Sek Yuen Restaurant",         lat:3.1444, lng:101.7153, category:"chinese", price:"RM20–45", vibe:"Chinese food classic KL sejak tahun 50an. Heritage betul." },
+      { name:"Kedai Makan Kim Gary",        lat:3.1522, lng:101.7040, category:"chinese", price:"RM15–28", vibe:"HK cafe vibes. Mee soup dia comfort food gila." },
+
+      // SUP GEARBOX / BERAT
+      { name:"Sup Hamid Sup Utara",         lat:3.1670, lng:101.7210, category:"sup", price:"RM10–20", vibe:"Sup gearbox paling legendary area Chow Kit. Kenyang padu." },
+      { name:"Sup Tulang Pak Usop",         lat:3.1345, lng:101.7089, category:"sup", price:"RM8–15",  vibe:"Makan malam lawat sini. Kuah dia kaw gila. Portion besar." },
+
+      // SATAY
+      { name:"Satay Kajang Haji Samuri",    lat:2.9943, lng:101.7889, category:"satay", price:"RM2–3/cucuk", vibe:"Satay paling famous Malaysia. Wajib datang sekali." },
+      { name:"Satay Warisan Tok Ayah",      lat:3.1455, lng:101.6910, category:"satay", price:"RM2/cucuk",   vibe:"Satay best kawasan KL. Sos kacang dia pekat sempurna." },
+
+      // MEE TARIK / WESTERN MURAH
+      { name:"Mee Tarik Af Restoran",       lat:3.1590, lng:101.7045, category:"mee tarik", price:"RM10–16", vibe:"Handmade pulled noodles. Unik dalam KL ni." },
+      { name:"Dave's Deli",                 lat:3.1200, lng:101.6622, category:"western", price:"RM18–32", vibe:"Western murah tapi portion tak masuk akal besarnya." },
+      { name:"Absolute Thai",               lat:3.1478, lng:101.7058, category:"thai", price:"RM15–30", vibe:"Thai food sederhana tapi consistent. Port lunch office ramai." },
+
+      // SHELLOUT / SEAFOOD
+      { name:"Pak John Seafood",            lat:3.1125, lng:101.6454, category:"shellout", price:"RM30–60", vibe:"Shellout seafood. Makan tangan. Memang ngam lepak member." },
+      { name:"Fatty Crab",                  lat:3.1389, lng:101.6867, category:"shellout", price:"RM40–80", vibe:"Ketam masak lemak chili padi. Makan ramai-ramai best." },
+      { name:"Mr Sotong",                   lat:3.1602, lng:101.7148, category:"shellout", price:"RM25–50", vibe:"Sotong goreng tepung viral. Portion gila besar." },
+
+      // DESSERT VIRAL
+      { name:"Cendol Pak Buyung",           lat:3.1411, lng:101.6980, category:"dessert", price:"RM4–8",   vibe:"Cendol terbaik KL. Simple tapi sedap ya ampun." },
+      { name:"Bingsu HanBingsu",            lat:3.1544, lng:101.7064, category:"dessert", price:"RM18–28", vibe:"Korean shaved ice. Viral TikTok. Sweet gila tapi best." },
+      { name:"Apam Balik Uncle Nasi",       lat:3.1367, lng:101.7001, category:"dessert", price:"RM3–6",   vibe:"Apam balik crispy penuh jagung. Snack legend." },
+      { name:"Tealive KLCC",                lat:3.1578, lng:101.7124, category:"dessert", price:"RM8–15",  vibe:"Bubble tea fix bila dah teringat. Dekat je mesti ada." },
+
+      // ROTI CANAI / NASI CAMPUR
+      { name:"Roti Canai Transfer Road",    lat:3.1480, lng:101.6930, category:"roti canai", price:"RM2–6",   vibe:"Roti canai best KL. Kari dia pekat. Sarapan paling ngam." },
+      { name:"Kedai Makan Tengah Hari",     lat:3.1305, lng:101.6781, category:"nasi campur", price:"RM7–12",  vibe:"Nasi campur murah. Lauk dia banyak. Port makan lunch." },
+      { name:"Nasi Arab Yasmin",            lat:3.1644, lng:101.7033, category:"nasi arab", price:"RM15–25", vibe:"Nasi mandi + lamb. Kenyang gila lepas makan ni." },
+
+      // MAGGI GORENG / LATE NIGHT
+      { name:"Maggi Goreng Pak Din",        lat:3.1512, lng:101.7085, category:"mamak", price:"RM5–8",   vibe:"Maggi goreng pukul 2 pagi ni lah jawapan dia. 24 jam." },
+      { name:"Mee Goreng Mamak Kassim",     lat:3.1387, lng:101.7162, category:"mamak", price:"RM6–10",  vibe:"Mee goreng level mamak terbaik. Pedas dia betul-betul." },
+
+      // WESTERN / BRUNCH
+      { name:"Limapulo",                    lat:3.1265, lng:101.6598, category:"western", price:"RM25–45", vibe:"Brunch spot aesthetic. Dating pun cun. Weekend ramai." },
+      { name:"The Social",                  lat:3.1488, lng:101.7009, category:"western", price:"RM22–40", vibe:"Port lepak malam, ada drinks. Vibe dia chill gila." },
+    ];
+
+    // ── MOOD CATEGORIES ───────────────────────────────────────────
+    const MOODS = {
+      "🥵 Pedas Gila":        ["tomyam","mamak"],
+      "💸 Poket Nipis":       ["nasi lemak","roti canai","mamak","nasi campur"],
+      "🌙 Makan Tengah Malam":["mamak","burger","sup"],
+      "🫠 Healing Jap":       ["cafe","dessert"],
+      "🍚 Kenyang Padu":      ["nasi campur","western","nasi arab","shellout","sup"],
+      "⚡ Cepat Lah Lapar":   ["burger","mamak","roti canai","chinese"],
+      "❤️ Dating Cun":        ["cafe","western","thai"],
+      "🤤 Viral TikTok":      ["dessert","burger","cafe"],
+      "🧃 Lepak Member":      ["mamak","shellout","satay","kopitiam"],
+    };
+
+    // ── STATE ─────────────────────────────────────────────────────
+    let userLat = null;
+    let userLng = null;
+    let activeKeyword = "food";
+    let activeMood    = null;
+    let lastResults   = [];
+
+    // ── HAVERSINE ─────────────────────────────────────────────────
+    function haversine(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2
+              + Math.cos(lat1 * Math.PI/180)
+              * Math.cos(lat2 * Math.PI/180)
+              * Math.sin(dLng/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    function fmtDist(d) {
+      return d < 1 ? (d*1000).toFixed(0)+"m" : d.toFixed(1)+"km";
+    }
+
+    // ── GEOLOCATION ───────────────────────────────────────────────
+    function getLocation(callback) {
+      if (!navigator.geolocation) {
+        showError("Browser kau tak support GPS. Cuba browser lain.");
+        return;
+      }
+      showLoading();
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          userLat = pos.coords.latitude;
+          userLng = pos.coords.longitude;
+          document.getElementById('location-text').textContent = "Kawasan Kau";
+          callback();
+        },
+        err => {
+          // Fallback: default to KL city centre
+          userLat = 3.1478;
+          userLng = 101.7001;
+          document.getElementById('location-text').textContent = "KL (default)";
+          showMsg("info", "📍", "On location jap 😭",
+            "Tak dapat detect lokasi kau. Guna KL centre je dulu.\nBagi permission location untuk result lebih tepat.");
+          setTimeout(() => callback(), 1500);
+        },
+        { timeout: 8000, enableHighAccuracy: false }
+      );
+    }
+
+    // ── MOOD FILTERS ──────────────────────────────────────────────
+    function filterByMood(mood) {
+      const cats = MOODS[mood] || [];
+      return RESTAURANTS.filter(r => cats.includes(r.category));
+    }
+
+    function filterByKeyword(kw) {
+      if (!kw || kw === "food") return RESTAURANTS;
+      const q = kw.toLowerCase();
+      return RESTAURANTS.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.category.toLowerCase().includes(q) ||
+        r.vibe.toLowerCase().includes(q)
+      );
+    }
+
+    // ── RESULT ENGINE ─────────────────────────────────────────────
+    function generateResults(pool) {
+      if (!pool || pool.length === 0) pool = RESTAURANTS;
+
+      // Attach distance to each
+      let withDist = pool.map(r => ({
+        ...r,
+        dist: haversine(userLat, userLng, r.lat, r.lng)
+      }));
+
+      // Filter by radius; expand if too few
+      let nearby = withDist.filter(r => r.dist <= 5);
+      if (nearby.length < 3) nearby = withDist.filter(r => r.dist <= 10);
+      if (nearby.length < 3) nearby = withDist; // use all if still not enough
+
+      nearby.sort((a,b) => a.dist - b.dist);
+
+      const used = new Set();
+
+      // Pick 1: nearest
+      const nearest = nearby[0];
+      used.add(nearest.name);
+
+      // Pick 2: cheapest (lowest starting price number)
+      const byPrice = [...nearby].sort((a,b) => {
+        const pa = parseInt(a.price.replace(/[^0-9]/g, '')) || 999;
+        const pb = parseInt(b.price.replace(/[^0-9]/g, '')) || 999;
+        return pa - pb;
+      });
+      let cheapest = byPrice.find(r => !used.has(r.name));
+      if (!cheapest) cheapest = byPrice[0];
+      used.add(cheapest.name);
+
+      // Pick 3: random hidden gem
+      const remaining = nearby.filter(r => !used.has(r.name));
+      const gem = remaining.length
+        ? remaining[Math.floor(Math.random() * remaining.length)]
+        : nearby[Math.floor(Math.random() * nearby.length)];
+
+      return [
+        { ...nearest,  label: "Dekat Gila Dengan Kau",  labelEmoji: "📍" },
+        { ...cheapest, label: "Jimat Tapi Sedap",        labelEmoji: "💸" },
+        { ...gem,      label: "Bedal Je Ni",             labelEmoji: "🎲" },
+      ];
+    }
+
+    // ── RENDER RESULTS ────────────────────────────────────────────
+    const CATEGORY_EMOJI = {
+      mamak:"🍽️", "nasi lemak":"🍚", burger:"🍔", tomyam:"🌶️",
+      cafe:"☕", chinese:"🥢", kopitiam:"☕", sup:"🥣",
+      satay:"🍢", "mee tarik":"🍜", western:"🍟", shellout:"🦐",
+      dessert:"🧁", "roti canai":"🫓", "nasi campur":"🍱",
+      "nasi arab":"🍖", thai:"🫕", "nasi kandar":"🍛"
+    };
+
+    function renderResults(results) {
+      lastResults = results;
+      const container = document.getElementById('results');
+      const header    = document.getElementById('results-header');
+      const titleEl   = document.getElementById('results-title');
+      const countEl   = document.getElementById('results-count');
+      const empty     = document.getElementById('empty');
+      const stateMsg  = document.getElementById('state-msg');
+      const poweredBy = document.getElementById('powered-by');
+
+      stateMsg.style.display  = "none";
+      empty.style.display     = "none";
+      header.style.display    = "flex";
+      poweredBy.style.display = "block";
+      poweredBy.textContent   = "✦ lapargila — cepat, local, tak serabut";
+
+      titleEl.textContent = activeMood ? activeMood : "Port Makan Kau";
+      countEl.textContent = results.length + " cadangan";
+
+      container.innerHTML = "";
+      results.forEach((r, i) => {
+        const card = document.createElement('div');
+        card.className = "card" + (i === 0 ? " featured" : "");
+        card.style.animationDelay = (i * 0.08) + "s";
+
+        const emoji = CATEGORY_EMOJI[r.category] || "🍴";
+
+        card.innerHTML = `
+          <div class="card-img">
+            <div class="card-img-placeholder">
+              <span class="placeholder-emoji">${emoji}</span>
+              <span class="placeholder-text">${r.category}</span>
+            </div>
+            <div class="card-badges">
+              <div class="badge-left">
+                <span class="badge badge-featured">${r.labelEmoji} ${r.label}</span>
+              </div>
+              <span class="badge-dist">📍 ${fmtDist(r.dist)}</span>
+            </div>
+            <div class="card-img-name">${r.name}</div>
+          </div>
+          <div class="card-body">
+            <div class="card-row">
+              <span class="cuisine-pill">${r.category}</span>
+              <span class="vicinity-text">${r.price}</span>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text-2);line-height:1.55;margin-bottom:12px;transition:color 0.22s">${r.vibe}</p>
+            <div class="card-actions">
+              <a class="action-btn maps-btn"
+                 href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ' ' + r.category + ' KL')}"
+                 target="_blank" rel="noopener noreferrer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Buka Maps
+              </a>
+              <button class="action-btn phone-btn" onclick="reshuffleOne(${i})" title="Cuba lain">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // ── UI STATE HELPERS ──────────────────────────────────────────
+    const LOADING_LINES = [
+      "Cari port makan padu dekat kau 🍜",
+      "Sekejap, tengah scan port sedap 👀",
+      "Tengah fikir apa ngam dengan mood kau…",
+      "Sikit je lagi, nak confirm port paling best 🔥",
+    ];
+    let loadingIdx = 0;
+    let loadingInterval = null;
+
+    function showLoading() {
+      const el = document.getElementById('state-msg');
+      const container = document.getElementById('results');
+      const header    = document.getElementById('results-header');
+      const empty     = document.getElementById('empty');
+
+      header.style.display    = "none";
+      empty.style.display     = "none";
+      container.innerHTML     = "";
+
+      loadingIdx = 0;
+      el.className = "";
+      el.innerHTML = `
+        <div class="spinner-wrap"><div class="spinner"></div></div>
+        <div class="state-title" id="loading-line">${LOADING_LINES[0]}</div>
+      `;
+      el.style.display = "block";
+
+      clearInterval(loadingInterval);
+      loadingInterval = setInterval(() => {
+        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
+        const line = document.getElementById('loading-line');
+        if (line) line.textContent = LOADING_LINES[loadingIdx];
+      }, 1200);
+    }
+
+    function showMsg(type, icon, title, sub) {
+      clearInterval(loadingInterval);
+      const el = document.getElementById('state-msg');
+      el.className = type;
+      el.innerHTML = `
+        <span class="state-icon">${icon}</span>
+        <div class="state-title">${title}</div>
+        <p class="state-sub">${sub.replace(/\n/g,'<br>')}</p>
+      `;
+      el.style.display = "block";
+    }
+
+    function showError(msg) {
+      showMsg("error", "😭", "Alamak!", msg);
+    }
+
+    // ── RESHUFFLE ONE CARD ────────────────────────────────────────
+    function reshuffleOne(idx) {
+      const pool = activeMood ? filterByMood(activeMood) : filterByKeyword(activeKeyword);
+      const withDist = pool.map(r => ({
+        ...r, dist: haversine(userLat, userLng, r.lat, r.lng)
+      })).sort((a,b) => a.dist - b.dist);
+
+      const usedNames = lastResults.map(r => r.name);
+      const candidates = withDist.filter(r => !usedNames.includes(r.name) || r.name === lastResults[idx].name);
+      const newPick = candidates[Math.floor(Math.random() * candidates.length)] || withDist[0];
+
+      const labels = [
+        { label:"Dekat Gila Dengan Kau", labelEmoji:"📍" },
+        { label:"Jimat Tapi Sedap",       labelEmoji:"💸" },
+        { label:"Bedal Je Ni",            labelEmoji:"🎲" },
+      ];
+      lastResults[idx] = { ...newPick, ...labels[idx] };
+      renderResults(lastResults);
+    }
+
+    // ── FULL RUN ──────────────────────────────────────────────────
+    function runEngine(pool) {
+      clearInterval(loadingInterval);
+      const results = generateResults(pool);
+      renderResults(results);
+    }
+
+    function doSearch() {
+      activeMood = null;
+      const pool = filterByKeyword(activeKeyword);
+      if (userLat !== null) {
+        showLoading();
+        setTimeout(() => runEngine(pool), 800);
+      } else {
+        getLocation(() => {
+          setTimeout(() => runEngine(pool), 600);
+        });
+      }
+    }
+
+    // ── WIRE SEARCH BUTTON ────────────────────────────────────────
+    const searchBtn = document.getElementById('search-btn');
+    const keywordInput = document.getElementById('keyword');
+
+    searchBtn.addEventListener('click', () => {
+      const val = keywordInput.value.trim();
+      activeKeyword = val || "food";
+      doSearch();
+    });
+
+    keywordInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const val = keywordInput.value.trim();
+        activeKeyword = val || "food";
+        doSearch();
+      }
+    });
+
+    // ── WIRE FILTER CHIPS ─────────────────────────────────────────
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeKeyword = chip.dataset.kw || "food";
+        activeMood    = null;
+        keywordInput.value = "";
+        doSearch();
+      });
+    });
+
+    // ── WIRE QUICK PICKS ──────────────────────────────────────────
+    function quickSearch(kw) {
+      activeKeyword = kw;
+      activeMood    = null;
+      keywordInput.value = kw;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      doSearch();
+    }
+
+    // ── AUTO INIT on page load ────────────────────────────────────
+    window.addEventListener('load', () => {
+      // Show welcome state
+      document.getElementById('empty').style.display = "block";
+      document.getElementById('state-msg').style.display = "none";
+
+      // Silently grab location in background
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
+            document.getElementById('location-text').textContent = "Kawasan Kau";
+          },
+          () => {
+            userLat = 3.1478;
+            userLng = 101.7001;
+            document.getElementById('location-text').textContent = "KL (default)";
+          },
+          { timeout: 6000, enableHighAccuracy: false }
+        );
+      } else {
+        userLat = 3.1478;
+        userLng = 101.7001;
+      }
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // LAPARGILA LOGIC END
+    // ══════════════════════════════════════════════════════════════
+  </script>
+</body>
+</html>
