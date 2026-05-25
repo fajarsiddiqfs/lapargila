@@ -1208,7 +1208,7 @@ import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
 
 const firebaseConfig = {
   apiKey: "AIzaSyDTWIgHewIhvdmnrnzesQPvR3CaT2-VMX8",
-  authDomain: "lapargila-9277a.firebaseapp.com",
+  authDomain: "lapargila.netlify.app",
   projectId: "lapargila-9277a",
   storageBucket: "lapargila-9277a.firebasestorage.app",
   messagingSenderId: "139980327649",
@@ -1469,6 +1469,13 @@ function toggleNearby() {
   nearbyActive = !nearbyActive;
   const btn = document.getElementById('nearbyBtn');
   btn.classList.toggle('active', nearbyActive);
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  document.getElementById('searchResults').classList.remove('visible');
+  document.getElementById('mainContent').style.display = 'block';
 }
 
 // ─── EXPOSE TO WINDOW (needed for onclick in HTML) ────────────────
