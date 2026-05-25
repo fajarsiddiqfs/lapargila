@@ -6,6 +6,7 @@
 <title>Lapargila — Find. Watch. Eat.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYhh3ztkHagOtqsv9X-Y7inwpQs9F7MWY&libraries=places&callback=initMap" async defer></script>
 <style>
   :root {
     --bg: #F5F2ED;
@@ -1223,7 +1224,6 @@ const provider = new GoogleAuthProvider();
 
 // ─── GOOGLE PLACES API KEY ─────────────────────────────────────────
 // Replace with your actual Google Places API key
-const PLACES_API_KEY = "AIzaSyAYhh3ztkHagOtqsv9X-Y7inwpQs9F7MWY";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days cache
 
 // ─── AUTH STATE ────────────────────────────────────────────────────
@@ -1267,6 +1267,19 @@ async function signOutUser() {
   }
 }
 
+// ─── GOOGLE MAPS + PLACES SETUP ───────────────────────────────────
+let placesService = null;
+
+window.initMap = function() {
+  // Create a hidden map (required by Places API)
+  const map = new google.maps.Map(document.createElement('div'), {
+    center: { lat: 3.1390, lng: 101.6869 }, // Kuala Lumpur
+    zoom: 13
+  });
+  placesService = new google.maps.places.PlacesService(map);
+  console.log('✅ Google Places ready');
+};
+
 // ─── GOOGLE PLACES SEARCH WITH FIRESTORE CACHE ────────────────────
 async function searchPlacesWithCache(query) {
   const cacheKey = query.toLowerCase().trim().replace(/\s+/g, '_');
@@ -1287,36 +1300,45 @@ async function searchPlacesWithCache(query) {
     console.warn('Cache read error:', e);
   }
 
-  // 2. If no cache or expired → call Google Places API via CORS proxy
-  if (!PLACES_API_KEY || PLACES_API_KEY === 'YOUR_GOOGLE_PLACES_API_KEY') {
-    showToast('Add your Google Places API key to enable live search.');
+  // 2. Search via Places JS SDK (no CORS issues)
+  if (!placesService) {
+    showToast('Search loading... try again in a moment.');
     return [];
   }
 
-  try {
-    const url = `https://corsproxy.io/?${encodeURIComponent('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + encodeURIComponent(query + ' restaurant Kuala Lumpur') + '&key=' + PLACES_API_KEY)}`;
-    const resp = await fetch(url);
-    const json = await resp.json();
-    const results = (json.results || []).slice(0, 10).map(p => ({
-      place_id: p.place_id,
-      name: p.name,
-      address: p.formatted_address,
-      rating: p.rating,
-      open_now: p.opening_hours?.open_now ?? null,
-      types: p.types?.slice(0, 3) || [],
-      lat: p.geometry?.location?.lat,
-      lng: p.geometry?.location?.lng,
-    }));
+  return new Promise((resolve) => {
+    const request = {
+      query: query + ' restaurant Kuala Lumpur',
+      fields: ['place_id', 'name', 'formatted_address', 'rating', 'opening_hours', 'geometry', 'types'],
+    };
 
-    // 3. Save to Firestore cache
-    await setDoc(cacheRef, { results, cachedAt: serverTimestamp(), query });
-    console.log('💾 Cached to Firestore:', cacheKey);
-    return results;
-  } catch (err) {
-    console.error('Places API error:', err);
-    showToast('Search failed. Please try again.');
-    return [];
-  }
+    placesService.textSearch(request, async (results, status) => {
+      if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
+        showToast('No results found. Try a different search.');
+        resolve([]);
+        return;
+      }
+
+      const mapped = results.slice(0, 10).map(p => ({
+        place_id: p.place_id,
+        name: p.name,
+        address: p.formatted_address,
+        rating: p.rating,
+        open_now: p.opening_hours?.isOpen() ?? null,
+        types: p.types?.slice(0, 3) || [],
+        lat: p.geometry?.location?.lat(),
+        lng: p.geometry?.location?.lng(),
+      }));
+
+      // 3. Save to Firestore cache
+      try {
+        await setDoc(cacheRef, { results: mapped, cachedAt: serverTimestamp(), query });
+        console.log('💾 Cached:', cacheKey);
+      } catch(e) { console.warn('Cache write error:', e); }
+
+      resolve(mapped);
+    });
+  });
 }
 
 // ─── LIVE SEARCH WITH DEBOUNCE ────────────────────────────────────
