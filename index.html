@@ -1302,9 +1302,9 @@ async function searchPlacesWithCache(query) {
       maxResultCount: 10,
     };
 
-    const { places } = await Place.searchByText(request);
+    const { places: apiPlaces } = await Place.searchByText(request);
 
-    const mapped = places.map(p => ({
+    const mapped = apiPlaces.map(p => ({
       place_id: p.id,
       name: p.displayName,
       address: p.formattedAddress,
