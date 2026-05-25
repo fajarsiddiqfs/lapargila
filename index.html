@@ -1,1436 +1,1552 @@
 <!DOCTYPE html>
-<html lang="ms" data-theme="light">
+<html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <meta name="theme-color" content="#ffffff" id="theme-meta"/>
-  <title>LaparGila — Cari Makan Sekarang</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    /* ── LIGHT MODE (default) ───────────────────────────────────── */
-    :root,
-    [data-theme="light"] {
-      --bg:          #F7F5F2;
-      --surface:     #FFFFFF;
-      --card:        #FFFFFF;
-      --card-hover:  #F9F7F5;
-      --border:      rgba(0,0,0,0.07);
-      --border-md:   rgba(0,0,0,0.12);
-      --accent:      #FF6B35;
-      --accent-dim:  rgba(255,107,53,0.10);
-      --accent-glow: rgba(255,107,53,0.20);
-      --text:        #151515;
-      --text-2:      #6B6B6B;
-      --text-3:      #ABABAB;
-      --green:       #16A34A;
-      --green-dim:   rgba(22,163,74,0.10);
-      --red:         #DC2626;
-      --red-dim:     rgba(220,38,38,0.10);
-      --gold:        #B45309;
-      --gold-dim:    rgba(180,83,9,0.10);
-      --shadow:      0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
-      --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
-      --ad-bg:       #FFF3ED;
-      --ad-border:   rgba(255,107,53,0.25);
-      --ad-text:     #7C2D12;
-      --ad-subtext:  #C2410C;
-      --placeholder-bg: #F0EDE8;
-      --hero-glow:   rgba(255,107,53,0.12);
-    }
-
-    /* ── DARK MODE ──────────────────────────────────────────────── */
-    [data-theme="dark"] {
-      --bg:          #0f0f0f;
-      --surface:     #181818;
-      --card:        #1e1e1e;
-      --card-hover:  #252525;
-      --border:      rgba(255,255,255,0.07);
-      --border-md:   rgba(255,255,255,0.12);
-      --accent:      #FF6B35;
-      --accent-dim:  rgba(255,107,53,0.15);
-      --accent-glow: rgba(255,107,53,0.25);
-      --text:        #FAFAFA;
-      --text-2:      #A0A0A0;
-      --text-3:      #606060;
-      --green:       #34D399;
-      --green-dim:   rgba(52,211,153,0.12);
-      --red:         #F87171;
-      --red-dim:     rgba(248,113,113,0.12);
-      --gold:        #FCD34D;
-      --gold-dim:    rgba(252,211,77,0.12);
-      --shadow:      none;
-      --shadow-card: none;
-      --ad-bg:       rgba(255,107,53,0.08);
-      --ad-border:   rgba(255,107,53,0.2);
-      --ad-text:     #FAFAFA;
-      --ad-subtext:  #FF9A70;
-      --placeholder-bg: #2A2A2A;
-      --hero-glow:   rgba(255,107,53,0.18);
-    }
-
-    /* ── RESET ──────────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-text-size-adjust: 100%; }
-
-    :root {
-      --r-sm:   10px;
-      --r-md:   16px;
-      --r-lg:   20px;
-      --r-xl:   28px;
-      --font:   'Plus Jakarta Sans', -apple-system, sans-serif;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      min-height: 100vh;
-      max-width: 430px;
-      margin: 0 auto;
-      overflow-x: hidden;
-      /* push content below top ad bar */
-      padding-top: 44px;
-      /* push content above bottom ad bar + safe area */
-      padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px));
-      transition: background 0.22s, color 0.22s;
-    }
-
-    /* ── AD BAR — SHARED ────────────────────────────────────────── */
-    .ad-bar {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 430px;
-      z-index: 100;
-      background: var(--ad-bg);
-      border-color: var(--ad-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 0 16px;
-      font-family: var(--font);
-      transition: background 0.22s, border-color 0.22s;
-    }
-
-    /* ── AD BAR — TOP ───────────────────────────────────────────── */
-    .ad-bar-top {
-      top: 0;
-      height: 44px;
-      border-bottom: 1px solid var(--ad-border);
-    }
-
-    /* ── AD BAR — BOTTOM ────────────────────────────────────────── */
-    .ad-bar-bottom {
-      bottom: env(safe-area-inset-bottom, 0px);
-      height: 52px;
-      border-top: 1px solid var(--ad-border);
-    }
-
-    .ad-label {
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      border: 1px solid var(--border-md);
-      border-radius: 4px;
-      padding: 2px 5px;
-      flex-shrink: 0;
-    }
-
-    .ad-text {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--ad-text);
-      line-height: 1.3;
-      text-align: center;
-      flex: 1;
-    }
-
-    .ad-text strong {
-      color: var(--accent);
-    }
-
-    .ad-cta {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-decoration: none;
-      border: 1.5px solid var(--accent);
-      border-radius: 99px;
-      padding: 4px 10px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .ad-cta:hover {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    /* ── HERO HEADER ────────────────────────────────────────────── */
-    .hero {
-      position: relative;
-      padding: 24px 20px 0;
-      background: var(--surface);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: background 0.22s, box-shadow 0.22s;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -80px; right: -60px;
-      width: 260px; height: 260px;
-      background: radial-gradient(circle, var(--hero-glow) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .hero::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .hero-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      gap: 8px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-icon {
-      width: 38px; height: 38px;
-      background: var(--accent);
-      border-radius: var(--r-sm);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .brand-name {
-      font-size: 1.3rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      color: var(--text);
-      transition: color 0.22s;
-    }
-
-    .brand-name span { color: var(--accent); }
-
-    /* ── HERO RIGHT: location + theme toggle ────────────────────── */
-    .hero-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .location-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--card);
-      border: 1px solid var(--border-md);
-      border-radius: 99px;
-      padding: 7px 12px 7px 8px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text-2);
-      cursor: default;
-      max-width: 120px;
-      transition: background 0.22s, border-color 0.22s;
-    }
-
-    .loc-dot {
-      width: 8px; height: 8px;
-      background: var(--green);
-      border-radius: 50%;
-      flex-shrink: 0;
-      box-shadow: 0 0 0 2px var(--green-dim);
-    }
-
-    .loc-label {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    /* ── THEME TOGGLE ───────────────────────────────────────────── */
-    .theme-toggle {
-      width: 36px; height: 36px;
-      border-radius: 99px;
-      border: 1.5px solid var(--border-md);
-      background: var(--card);
-      color: var(--text-2);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s;
-      flex-shrink: 0;
-    }
-
-    .theme-toggle:hover {
-      background: var(--accent-dim);
-      border-color: rgba(255,107,53,0.4);
-      color: var(--accent);
-      transform: rotate(15deg);
-    }
-
-    .theme-toggle svg { width: 16px; height: 16px; }
-
-    .icon-sun, .icon-moon { transition: opacity 0.18s; }
-    [data-theme="light"] .icon-moon { display: none; }
-    [data-theme="dark"]  .icon-sun  { display: none; }
-
-    /* ── HEADLINE / SUB ─────────────────────────────────────────── */
-    .hero-headline {
-      font-size: 1.65rem;
-      font-weight: 800;
-      line-height: 1.22;
-      letter-spacing: -0.03em;
-      margin-bottom: 6px;
-      transition: color 0.22s;
-    }
-
-    .hero-headline em { font-style: normal; color: var(--accent); }
-
-    .hero-sub {
-      font-size: 0.85rem;
-      color: var(--text-2);
-      font-weight: 400;
-      margin-bottom: 22px;
-      line-height: 1.5;
-      transition: color 0.22s;
-    }
-
-    /* ── SEARCH BAR ─────────────────────────────────────────────── */
-    .search-bar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .search-input-wrap {
-      flex: 1;
-      position: relative;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 14px; top: 50%;
-      transform: translateY(-50%);
-      width: 18px; height: 18px;
-      opacity: 0.4;
-      pointer-events: none;
-      color: var(--text);
-    }
-
-    #keyword {
-      width: 100%;
-      background: var(--card);
-      border: 1.5px solid var(--border-md);
-      border-radius: var(--r-md);
-      padding: 13px 14px 13px 42px;
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 0.9rem;
-      font-weight: 500;
-      outline: none;
-      transition: border-color 0.18s, background 0.18s, color 0.22s;
-    }
-
-    #keyword::placeholder { color: var(--text-3); font-weight: 400; }
-    #keyword:focus {
-      border-color: var(--accent);
-      background: var(--accent-dim);
-    }
-
-    #search-btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--r-md);
-      padding: 13px 18px;
-      font-family: var(--font);
-      font-weight: 700;
-      font-size: 0.88rem;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: transform 0.14s, opacity 0.14s, box-shadow 0.14s;
-      flex-shrink: 0;
-      box-shadow: 0 2px 12px rgba(255,107,53,0.30);
-    }
-
-    #search-btn:hover  { box-shadow: 0 4px 18px rgba(255,107,53,0.45); }
-    #search-btn:active { transform: scale(0.95); opacity: 0.85; }
-    #search-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-
-    /* ── QUICK FILTERS ──────────────────────────────────────────── */
-    .filters-wrap {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 18px;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    .filters-wrap::-webkit-scrollbar { display: none; }
-
-    .filter-chip {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 99px;
-      padding: 7px 14px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-2);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.15s;
-      flex-shrink: 0;
-    }
-
-    .filter-chip:hover, .filter-chip.active {
-      background: var(--accent-dim);
-      border-color: rgba(255,107,53,0.4);
-      color: var(--accent);
-    }
-
-    .filter-chip .chip-emoji { font-size: 0.9rem; }
-
-    /* ── SECTION HEADER ─────────────────────────────────────────── */
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 20px 14px;
-    }
-
-    .section-title {
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      transition: color 0.22s;
-    }
-
-    .section-count {
-      font-size: 0.75rem;
-      color: var(--text-2);
-      font-weight: 500;
-      background: var(--card);
-      border: 1px solid var(--border-md);
-      border-radius: 99px;
-      padding: 3px 10px;
-      transition: background 0.22s;
-    }
-
-    /* ── RESULTS ────────────────────────────────────────────────── */
-    #results {
-      padding: 0 12px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    /* ── CARD ───────────────────────────────────────────────────── */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      overflow: hidden;
-      animation: riseIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-      box-shadow: var(--shadow-card);
-    }
-
-    @keyframes riseIn {
-      from { opacity: 0; transform: translateY(22px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .card:hover {
-      background: var(--card-hover);
-      border-color: var(--border-md);
-    }
-
-    .card.featured {
-      border-color: rgba(255,107,53,0.30);
-      box-shadow: 0 0 0 1px rgba(255,107,53,0.12), var(--shadow-card);
-    }
-
-    /* Card image */
-    .card-img {
-      position: relative;
-      height: 160px;
-      overflow: hidden;
-      background: var(--placeholder-bg);
-      transition: background 0.22s;
-    }
-
-    .card-img img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.4s ease;
-    }
-
-    .card:hover .card-img img { transform: scale(1.04); }
-
-    /* Gradient overlay for image text readability */
-    .card-img::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%);
-      pointer-events: none;
-    }
-
-    /* Placeholder (no photo) */
-    .card-img-placeholder {
-      width: 100%; height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .placeholder-emoji { font-size: 2.4rem; }
-
-    .placeholder-text {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text-3);
-      text-transform: capitalize;
-      letter-spacing: 0.04em;
-    }
-
-    /* Badges */
-    .card-badges {
-      position: absolute;
-      top: 10px; left: 10px; right: 10px;
-      display: flex;
-      gap: 6px;
-      z-index: 2;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .badge-left { display: flex; gap: 6px; }
-
-    .badge {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      padding: 4px 9px;
-      border-radius: 99px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    .badge-featured {
-      background: rgba(252,211,77,0.22);
-      color: #B45309;
-      border: 1px solid rgba(180,83,9,0.3);
-    }
-
-    [data-theme="dark"] .badge-featured {
-      color: var(--gold);
-      border-color: rgba(252,211,77,0.3);
-    }
-
-    .badge-open {
-      background: rgba(22,163,74,0.15);
-      color: #16A34A;
-      border: 1px solid rgba(22,163,74,0.3);
-    }
-
-    [data-theme="dark"] .badge-open {
-      color: var(--green);
-    }
-
-    .badge-closed {
-      background: rgba(220,38,38,0.15);
-      color: #DC2626;
-      border: 1px solid rgba(220,38,38,0.25);
-    }
-
-    [data-theme="dark"] .badge-closed {
-      color: var(--red);
-    }
-
-    .badge-rating {
-      background: rgba(0,0,0,0.50);
-      color: #FCD34D;
-      border: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 99px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    .card-img-name {
-      position: absolute;
-      bottom: 10px; left: 14px; right: 14px;
-      z-index: 2;
-      font-size: 1.0rem;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.3;
-      letter-spacing: -0.02em;
-      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
-    }
-
-    /* Card body */
-    .card-body { padding: 12px 14px 14px; }
-
-    .card-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .cuisine-pill {
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid rgba(255,107,53,0.2);
-      border-radius: 99px;
-      padding: 3px 10px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: capitalize;
-      white-space: nowrap;
-    }
-
-    .vicinity-text {
-      font-size: 0.75rem;
-      color: var(--text-2);
-      font-weight: 400;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      flex: 1;
-      transition: color 0.22s;
-    }
-
-    /* Distance badge on card image */
-    .badge-dist {
-      background: rgba(0,0,0,0.55);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.15);
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 99px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      white-space: nowrap;
-    }
-
-    /* Card action buttons row */
-    .card-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .action-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      background: var(--bg);
-      border: 1px solid var(--border-md);
-      border-radius: var(--r-sm);
-      padding: 11px;
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 0.82rem;
-      font-weight: 600;
-      text-align: center;
-      text-decoration: none;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
-      cursor: pointer;
-    }
-
-    .maps-btn { flex: 1; }
-    .phone-btn { flex-shrink: 0; padding: 11px 14px; }
-
-    .maps-btn:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .phone-btn:hover {
-      background: var(--green);
-      border-color: var(--green);
-      color: #fff;
-    }
-
-    .action-btn svg { flex-shrink: 0; }
-
-    /* ── STATES ─────────────────────────────────────────────────── */
-    #state-msg {
-      text-align: center;
-      padding: 60px 24px;
-      display: none;
-    }
-
-    .state-icon { font-size: 3rem; margin-bottom: 14px; display: block; }
-
-    .state-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 6px;
-      transition: color 0.22s;
-    }
-
-    .state-sub {
-      font-size: 0.82rem;
-      color: var(--text-2);
-      line-height: 1.5;
-      transition: color 0.22s;
-    }
-
-    #state-msg.error .state-title { color: var(--red); }
-
-    /* Spinner */
-    .spinner-wrap { margin-bottom: 20px; }
-
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── EMPTY STATE ────────────────────────────────────────────── */
-    #empty {
-      display: none;
-      padding: 60px 24px;
-      text-align: center;
-    }
-
-    .empty-icon { font-size: 3.2rem; margin-bottom: 16px; }
-
-    .empty-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      transition: color 0.22s;
-    }
-
-    .empty-sub {
-      font-size: 0.82rem;
-      color: var(--text-2);
-      line-height: 1.6;
-      margin-bottom: 24px;
-      transition: color 0.22s;
-    }
-
-    .quick-picks {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-
-    .quick-pick {
-      background: var(--card);
-      border: 1px solid var(--border-md);
-      border-radius: 99px;
-      padding: 8px 16px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-2);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .quick-pick:hover {
-      background: var(--accent-dim);
-      border-color: rgba(255,107,53,0.35);
-      color: var(--accent);
-    }
-
-    /* ── POWERED BY ─────────────────────────────────────────────── */
-    #powered-by {
-      display: none;
-      text-align: center;
-      font-size: 0.68rem;
-      color: var(--text-3);
-      letter-spacing: 0.04em;
-      padding: 8px 20px 0;
-      transition: color 0.22s;
-    }
-
-    /* ── SECTION LABEL ──────────────────────────────────────────── */
-    #results-header { display: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lapargila — Find. Watch. Eat.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F2ED;
+    --bg2: #EDEAE3;
+    --surface: #FFFFFF;
+    --surface2: #F9F7F4;
+    --text: #1A1816;
+    --text2: #6B6660;
+    --text3: #9E9893;
+    --accent: #E8440A;
+    --accent2: #FF6B35;
+    --accent-bg: #FFF0EB;
+    --border: rgba(26,24,22,0.1);
+    --border2: rgba(26,24,22,0.06);
+    --card-shadow: 0 2px 12px rgba(26,24,22,0.08);
+    --pill-bg: #1A1816;
+    --pill-text: #F5F2ED;
+    --tag-bg: #EDEAE3;
+    --tag-text: #1A1816;
+    --badge-bg: #E8440A;
+    --badge-text: #FFFFFF;
+    --nav-bg: rgba(245,242,237,0.92);
+    --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #141210;
+    --bg2: #1E1B18;
+    --surface: #252119;
+    --surface2: #1A1816;
+    --text: #F0EDE8;
+    --text2: #9E9893;
+    --text3: #6B6660;
+    --accent: #FF6B35;
+    --accent2: #E8440A;
+    --accent-bg: #2A1A12;
+    --border: rgba(240,237,232,0.1);
+    --border2: rgba(240,237,232,0.05);
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    --pill-bg: #F0EDE8;
+    --pill-text: #141210;
+    --tag-bg: #252119;
+    --tag-text: #F0EDE8;
+    --badge-bg: #FF6B35;
+    --badge-text: #141210;
+    --nav-bg: rgba(20,18,16,0.92);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+    transition: background var(--transition), color var(--transition);
+  }
+
+  /* TOP NAV */
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--nav-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border2);
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .theme-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all var(--transition);
+  }
+  .theme-btn:hover { background: var(--bg2); }
+  .avatar-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--accent-bg);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    transition: all var(--transition);
+  }
+
+  /* HERO */
+  .hero {
+    padding: 28px 20px 20px;
+  }
+  .hero-greeting {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.8px;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 14px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    font-weight: 300;
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 18px;
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    height: 50px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    padding: 0 50px 0 44px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: all var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .search-input::placeholder { color: var(--text3); }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,68,10,0.1);
+  }
+  .search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg2);
+    color: var(--text2);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all var(--transition);
+  }
+  .search-clear.visible { display: flex; }
+  .search-clear:hover { background: var(--border); }
+
+  /* LOCATION ROW */
+  .location-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .location-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--pill-bg);
+    color: var(--pill-text);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition);
+    flex-shrink: 0;
+  }
+  .location-pill:hover { opacity: 0.85; }
+  .location-pill svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .nearby-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid rgba(232,68,10,0.2);
+    transition: all var(--transition);
+  }
+  .nearby-toggle.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .nearby-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  /* CATEGORIES */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 12px;
+    padding: 0 20px;
+  }
+  .categories-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 20px 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    margin-bottom: 24px;
+  }
+  .categories-scroll::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    padding: 8px 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    flex-shrink: 0;
+  }
+  .cat-pill .cat-emoji { font-size: 15px; }
+  .cat-pill:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+  .cat-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  /* VIDEO CARDS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .see-all {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+  }
+
+  .feed-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 0 20px 8px;
+    scrollbar-width: none;
+    margin-bottom: 28px;
+  }
+  .feed-scroll::-webkit-scrollbar { display: none; }
+
+  .video-card {
+    flex-shrink: 0;
+    width: 200px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: var(--card-shadow);
+  }
+  .video-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,24,22,0.12); }
+  .video-thumb {
+    width: 100%;
+    height: 140px;
+    position: relative;
+    overflow: hidden;
+  }
+  .video-thumb-bg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+  }
+  .video-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .video-play svg { width: 14px; height: 14px; fill: var(--accent); margin-left: 2px; }
+  .video-platform {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+  }
+  .video-views {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    font-size: 10px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .video-info { padding: 10px 12px 12px; }
+  .video-place {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .video-creator {
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .video-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-weight: 500;
+  }
+
+  /* PLACE CARDS (vertical list) */
+  .place-list { padding: 0 20px; margin-bottom: 28px; display: flex; flex-direction: column; gap: 12px; }
+
+  .place-card {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border2);
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: var(--card-shadow);
+  }
+  .place-card:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,24,22,0.1); }
+  .place-emoji-box {
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    background: var(--bg2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .place-info { flex: 1; min-width: 0; }
+  .place-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .place-meta {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .place-meta-dot { color: var(--border); }
+  .place-bottom { display: flex; align-items: center; justify-content: space-between; }
+  .place-dist {
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .place-video-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    color: #E8A20A;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: var(--nav-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border2);
+    display: flex;
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 4px 0;
+    border: none;
+    background: none;
+    color: var(--text3);
+    transition: color var(--transition);
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 500; letter-spacing: 0.2px; }
+  .nav-center-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 4px 0;
+    border: none;
+    background: none;
+  }
+  .nav-center-inner {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -18px;
+    box-shadow: 0 4px 14px rgba(232,68,10,0.4);
+    transition: all var(--transition);
+  }
+  .nav-center-btn:hover .nav-center-inner { transform: scale(1.05); }
+  .nav-center-inner svg { width: 20px; height: 20px; color: white; }
+  .nav-center-btn span { font-size: 10px; font-weight: 500; color: var(--accent); margin-top: 2px; }
+
+  /* SEARCH RESULTS */
+  .search-results {
+    display: none;
+    padding: 0 20px;
+    margin-bottom: 28px;
+  }
+  .search-results.visible { display: block; }
+  .result-label {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 12px;
+  }
+  .result-label strong { color: var(--text); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 430px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 36px; height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin: 0 auto 20px;
+  }
+  .modal-place-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .modal-meta {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .modal-video-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+  .modal-video-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    margin-bottom: 20px;
+  }
+  .modal-video-row::-webkit-scrollbar { display: none; }
+  .modal-video-thumb {
+    flex-shrink: 0;
+    width: 120px;
+    height: 90px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .modal-video-play {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-video-play svg { width: 24px; height: 24px; fill: white; }
+  .modal-action-row { display: flex; gap: 8px; margin-top: 8px; }
+  .modal-btn {
+    flex: 1;
+    height: 44px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all var(--transition);
+  }
+  .modal-btn:hover { background: var(--bg2); }
+  .modal-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .modal-btn.primary:hover { opacity: 0.9; }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  /* SIGN IN BANNER */
+  .signin-banner {
+    margin: 0 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--card-shadow);
+  }
+  .signin-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--accent-bg);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .signin-text { flex: 1; }
+  .signin-text strong { display: block; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .signin-text span { font-size: 12px; color: var(--text2); }
+  .signin-btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .signin-btn:hover { opacity: 0.85; }
+
+  /* SPACING */
+  .pb-nav { padding-bottom: 90px; }
+  .section-gap { margin-bottom: 24px; }
+
+  /* TRENDING BADGE */
+  .trending-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FFF0EB;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  [data-theme="dark"] .trending-badge { background: var(--accent-bg); }
+
+  /* OPEN STATUS */
+  .open-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #22C55E;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .closed-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #EF4444;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+</style>
 </head>
 <body>
 
-  <!-- ══ TOP AD BAR ════════════════════════════════════════════════ -->
-  <div class="ad-bar ad-bar-top">
-    <span class="ad-label">AD</span>
-    <span class="ad-text">🍔 <strong>Hungry? Get 20% off</strong> your first GrabFood order today</span>
-    <a class="ad-cta" href="#" target="_blank" rel="noopener noreferrer">Claim</a>
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="logo">La<span>par</span>gila</div>
+  <div class="nav-right">
+    <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme" id="themeBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+    <button class="avatar-btn" onclick="openSignIn()">AZ</button>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="pb-nav">
+
+  <!-- HERO -->
+  <div class="hero">
+    <p class="hero-greeting">Selamat datang 👋</p>
+    <h1 class="hero-title">Lapar? <em>Discover</em><br>places people love.</h1>
+    <p class="hero-sub">Real videos. Real Malaysians. Real food.</p>
+
+    <!-- SEARCH -->
+    <div class="search-wrap">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        class="search-input"
+        id="searchInput"
+        type="text"
+        placeholder="Cari tempat makan…"
+        autocomplete="off"
+        oninput="onSearch(this.value)"
+      />
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- LOCATION ROW -->
+    <div class="location-row">
+      <button class="location-pill">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Kuala Lumpur
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="nearby-toggle active" id="nearbyBtn" onclick="toggleNearby()">
+        <span class="nearby-dot"></span>
+        Near Me
+      </button>
+    </div>
   </div>
 
-  <!-- ══ HERO ══════════════════════════════════════════════════════ -->
-  <header class="hero">
-    <div class="hero-top">
-      <div class="brand">
-        <div class="brand-icon">🔥</div>
-        <span class="brand-name">Lapar<span>Gila</span></span>
-      </div>
-      <div class="hero-right">
-        <div class="location-pill">
-          <span class="loc-dot"></span>
-          <span class="loc-label" id="location-text">Mengesan…</span>
+  <!-- SIGN IN BANNER -->
+  <div class="signin-banner" id="signinBanner">
+    <div class="signin-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8440A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <div class="signin-text">
+      <strong>Save your favourites</strong>
+      <span>Sign in to unlock full experience</span>
+    </div>
+    <button class="signin-btn" onclick="openSignIn()">Sign in</button>
+  </div>
+
+  <!-- CATEGORIES -->
+  <p class="section-label">Browse by mood</p>
+  <div class="categories-scroll" id="categories">
+    <button class="cat-pill active" onclick="filterCat(this,'all')"><span class="cat-emoji">🔥</span> Trending</button>
+    <button class="cat-pill" onclick="filterCat(this,'supper')"><span class="cat-emoji">🌙</span> Supper</button>
+    <button class="cat-pill" onclick="filterCat(this,'budget')"><span class="cat-emoji">💸</span> Budget Eat</button>
+    <button class="cat-pill" onclick="filterCat(this,'cafe')"><span class="cat-emoji">☕</span> Café</button>
+    <button class="cat-pill" onclick="filterCat(this,'family')"><span class="cat-emoji">👨‍👩‍👧</span> Family</button>
+    <button class="cat-pill" onclick="filterCat(this,'date')"><span class="cat-emoji">🕯️</span> Date Night</button>
+    <button class="cat-pill" onclick="filterCat(this,'hiddenGem')"><span class="cat-emoji">💎</span> Hidden Gem</button>
+  </div>
+
+  <!-- SEARCH RESULTS -->
+  <div class="search-results" id="searchResults">
+    <p class="result-label" id="resultLabel"></p>
+    <div id="resultList"></div>
+  </div>
+
+  <!-- TRENDING VIDEOS -->
+  <div id="mainContent">
+    <div class="section-header section-gap">
+      <span class="section-title">🎬 Trending Videos</span>
+      <button class="see-all">See all</button>
+    </div>
+    <div class="feed-scroll">
+      <!-- Video Card 1 -->
+      <div class="video-card" onclick="openPlace(0)">
+        <div class="video-thumb">
+          <div class="video-thumb-bg" style="background: linear-gradient(135deg,#FFE8D6,#FFB994)">🍜</div>
+          <div class="video-platform">TikTok</div>
+          <div class="video-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <div class="video-views">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3" fill="white"/></svg>
+            248K
+          </div>
         </div>
-        <!-- Theme toggle button -->
-        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode">
-          <!-- Sun icon (shown in dark mode) -->
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"/>
-            <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-          </svg>
-          <!-- Moon icon (shown in light mode) -->
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-        </button>
+        <div class="video-info">
+          <div class="video-place">Restoran Weng Hin</div>
+          <div class="video-creator">@foodieKL · Chow Kit</div>
+          <div class="video-tags">
+            <span class="tag">Char Kuey Teow</span>
+            <span class="tag">Wajib Cuba</span>
+          </div>
+        </div>
+      </div>
+      <!-- Video Card 2 -->
+      <div class="video-card" onclick="openPlace(1)">
+        <div class="video-thumb">
+          <div class="video-thumb-bg" style="background: linear-gradient(135deg,#D6F0FF,#89CFF0)">🥩</div>
+          <div class="video-platform">YouTube</div>
+          <div class="video-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <div class="video-views">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3" fill="white"/></svg>
+            91K
+          </div>
+        </div>
+        <div class="video-info">
+          <div class="video-place">Nasi Kandar Pelita</div>
+          <div class="video-creator">@makanmalaysia · Ampang</div>
+          <div class="video-tags">
+            <span class="tag">Nasi Kandar</span>
+            <span class="tag">24 Jam</span>
+          </div>
+        </div>
+      </div>
+      <!-- Video Card 3 -->
+      <div class="video-card" onclick="openPlace(2)">
+        <div class="video-thumb">
+          <div class="video-thumb-bg" style="background: linear-gradient(135deg,#D6FFE8,#89EFC0)">🍦</div>
+          <div class="video-platform">Instagram</div>
+          <div class="video-play"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+          <div class="video-views">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3" fill="white"/></svg>
+            55K
+          </div>
+        </div>
+        <div class="video-info">
+          <div class="video-place">Apom Balik Jalan TAR</div>
+          <div class="video-creator">@jajanbesar · Masjid India</div>
+          <div class="video-tags">
+            <span class="tag">Dessert</span>
+            <span class="tag">Hidden Gem</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="hero-headline"><em>Korang Lapar Gila?</em></div>
-    <p class="hero-sub">Tekan kategori → dapat idea → tekan Maps untuk cari dekat kau.</p>
-
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <svg class="search-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M13 13L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <input type="text" id="keyword" placeholder="Cari: burger, nasi lemak, kopi…" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+    <!-- NEARBY PLACES -->
+    <div class="section-header">
+      <span class="section-title">📍 Near You</span>
+      <button class="see-all">See all</button>
+    </div>
+    <div class="place-list">
+      <div class="place-card" onclick="openPlace(0)">
+        <div class="place-emoji-box">🍜</div>
+        <div class="place-info">
+          <div class="place-name">Restoran Weng Hin</div>
+          <div class="place-meta">
+            <span class="open-dot"></span>
+            <span style="color:#22C55E;font-size:12px">Open</span>
+            <span class="place-meta-dot">·</span>
+            Char Kuey Teow
+            <span class="place-meta-dot">·</span>
+            RM8–15
+          </div>
+          <div class="place-bottom">
+            <span class="place-dist">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              0.8 km · Chow Kit
+            </span>
+            <span class="place-video-count">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              12 videos
+            </span>
+          </div>
+        </div>
       </div>
-      <button id="search-btn">Cari</button>
-    </div>
 
-    <div class="filters-wrap" id="filters">
-      <button class="filter-chip active" data-kw="food"><span class="chip-emoji">🍽️</span> Semua</button>
-      <button class="filter-chip" data-kw="mamak"><span class="chip-emoji">🫖</span> Mamak</button>
-      <button class="filter-chip" data-kw="nasi lemak"><span class="chip-emoji">🍚</span> Nasi Lemak</button>
-      <button class="filter-chip" data-kw="burger"><span class="chip-emoji">🍔</span> Burger</button>
-      <button class="filter-chip" data-kw="cafe"><span class="chip-emoji">☕</span> Cafe</button>
-      <button class="filter-chip" data-kw="tomyam"><span class="chip-emoji">🌶️</span> Tomyam</button>
-      <button class="filter-chip" data-kw="shellout"><span class="chip-emoji">🦐</span> Shellout</button>
-      <button class="filter-chip" data-kw="chinese"><span class="chip-emoji">🥢</span> Chinese</button>
-      <button class="filter-chip" data-kw="sup"><span class="chip-emoji">🥣</span> Sup</button>
-      <button class="filter-chip" data-kw="satay"><span class="chip-emoji">🍢</span> Satay</button>
-      <button class="filter-chip" data-kw="dessert"><span class="chip-emoji">🧁</span> Dessert</button>
-      <button class="filter-chip" data-kw="western"><span class="chip-emoji">🍟</span> Western</button>
-      <button class="filter-chip" data-kw="roti canai"><span class="chip-emoji">🫓</span> Roti Canai</button>
-      <button class="filter-chip" data-kw="nasi arab"><span class="chip-emoji">🍖</span> Nasi Arab</button>
-      <button class="filter-chip" data-kw="mee tarik"><span class="chip-emoji">🍜</span> Mee Tarik</button>
-    </div>
-  </header>
-
-  <!-- RESULTS SECTION -->
-  <div id="results-header" class="section-header">
-    <span class="section-title" id="results-title">Nearby</span>
-    <span class="section-count" id="results-count"></span>
-  </div>
-
-  <div id="powered-by"></div>
-
-  <!-- LOADING / ERROR -->
-  <div id="state-msg"></div>
-
-  <!-- EMPTY / WELCOME -->
-  <div id="empty">
-    <div class="empty-icon">🍴</div>
-    <div class="empty-title">Nak makan apa hari ni?</div>
-    <p class="empty-sub">Tekan kategori di atas atau taip<br>makanan yang kau nak.</p>
-    <div class="quick-picks">
-      <span class="quick-pick" onclick="quickSearch('nasi lemak')">🍚 Nasi Lemak</span>
-      <span class="quick-pick" onclick="quickSearch('mamak')">☕ Mamak</span>
-      <span class="quick-pick" onclick="quickSearch('burger')">🍔 Burger</span>
-      <span class="quick-pick" onclick="quickSearch('seafood')">🦐 Seafood</span>
-      <span class="quick-pick" onclick="quickSearch('ramen')">🍜 Ramen</span>
-    </div>
-  </div>
-
-  <!-- RESULTS LIST -->
-  <div id="results"></div>
-
-  <!-- ══ BOTTOM AD BAR ══════════════════════════════════════════════ -->
-  <div class="ad-bar ad-bar-bottom">
-    <span class="ad-label">AD</span>
-    <span class="ad-text">☕ <strong>Nespresso</strong> — Free machine with any pod subscription</span>
-    <a class="ad-cta" href="#" target="_blank" rel="noopener noreferrer">Tahu Lebih</a>
-  </div>
-
-  <script>
-    // ── THEME TOGGLE ──────────────────────────────────────────────
-    (function () {
-      const html   = document.documentElement;
-      const btn    = document.getElementById('theme-toggle');
-      const meta   = document.getElementById('theme-meta');
-
-      const saved  = localStorage.getItem('lapargila-theme') || 'light';
-      html.setAttribute('data-theme', saved);
-      meta.content = saved === 'dark' ? '#0f0f0f' : '#ffffff';
-
-      btn.addEventListener('click', () => {
-        const current = html.getAttribute('data-theme');
-        const next    = current === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        meta.content = next === 'dark' ? '#0f0f0f' : '#ffffff';
-        localStorage.setItem('lapargila-theme', next);
-      });
-    })();
-
-    // ══════════════════════════════════════════════════════════════
-    // LAPARGILA LOGIC START — powered by Overpass API (OpenStreetMap, FREE)
-    // ══════════════════════════════════════════════════════════════
-
-    // ── KEYWORD → OSM CUISINE/NAME TAG MAP ───────────────────────
-    // Maps user search terms to OpenStreetMap cuisine tags
-    const KEYWORD_MAP = {
-      "food":        null,           // null = all restaurants nearby
-      "mamak":       "indian|nasi_kandar|mamak",
-      "nasi lemak":  "nasi_lemak|malaysian",
-      "burger":      "burger",
-      "cafe":        "cafe|coffee_shop",
-      "tomyam":      "thai|tom_yam",
-      "shellout":    "seafood",
-      "chinese":     "chinese",
-      "sup":         "soup|malaysian",
-      "satay":       "satay|malaysian",
-      "dessert":     "dessert|ice_cream|cake",
-      "western":     "american|western|steak",
-      "roti canai":  "indian|nasi_kandar",
-      "nasi arab":   "arab|middle_eastern|kebab",
-      "mee tarik":   "noodle|chinese|malaysian",
-    };
-
-    // ── VIBE LINES PER CATEGORY ───────────────────────────────────
-    const VIBE_LINES = {
-      "mamak":      ["24 jam bro. Teh tarik dia confirm gila sedap.","Mamak vibes, mee goreng confirm ada.","Port lepak malam sampai subuh."],
-      "nasi lemak": ["Sambal dia pekat. Pagi-pagi confirm ramai.","Nasi lemak classic. Simple tapi tak pernah hampa.","Portion besar, harga murah. Wajib cuba."],
-      "burger":     ["Smash atau bakar — memang ngam lapar malam.","Burger tepi jalan level lain.","Baru bukak dah queue. Korang tahu kenapa."],
-      "cafe":       ["Healing jap dari dunia yang gila ni.","Coffee dia strong. WiFi ada. Duduk lama pun okay.","Aesthetic level up. Dating pun cun kat sini."],
-      "tomyam":     ["Pedas dia bukan main-main. Bawak tissue.","Tomyam seafood fresh. Peluh confirm keluar.","Kuah dia kaw gila. Nasi tambah mesti."],
-      "shellout":   ["Makan tangan. Paling syok lepak member ramai.","Seafood fresh. Order banyak-banyak.","Ketam dia besar gila. Worth every sen."],
-      "chinese":    ["Wok hei dia level dewa. Queue awal.","Kopitiam vibes. Roti bakar mentega confirm ada.","Classic chinese food. Sedap dari zaman moyang."],
-      "sup":        ["Sup gearbox pukul 2 pagi? Ni lah jawapan.","Kuah dia pekat, kenyang padu.","Makan malam perfect. Portion memang besar."],
-      "satay":      ["Sos kacang dia pekat sempurna. Cucuk banyak-banyak.","Satay bakar depan mata. Bau dia dah buat lapar.","Confirm repeat order. Satu cucuk tak cukup."],
-      "dessert":    ["Sweet fix lepas makan. Confirm viral TikTok.","Ice cream atau cendol — both pun win.","Dessert level artisan. Gram dulu, makan kemudian."],
-      "western":    ["Portion tak masuk akal besarnya. Value gila.","Western murah tapi rasa macam fine dining.","Chicken chop dia crispy luar, juicy dalam."],
-      "default":    ["Hidden gem area ni. Orang local je tahu.","Member repeat sini setiap minggu. Confirm best.","Tak pernah hampa. Sedap consistently."],
-    };
-
-    function getVibe(cuisine) {
-      const key = Object.keys(VIBE_LINES).find(k => cuisine && cuisine.toLowerCase().includes(k));
-      const lines = VIBE_LINES[key] || VIBE_LINES["default"];
-      return lines[Math.floor(Math.random() * lines.length)];
-    }
-
-    // ── PRICE GUESS BY CUISINE ────────────────────────────────────
-    function guessPrice(cuisine, name) {
-      if (!cuisine && !name) return "RM5–20";
-      const c = (cuisine || "").toLowerCase();
-      const n = (name || "").toLowerCase();
-      if (c.includes("fine") || n.includes("premium")) return "RM40–80";
-      if (c.includes("cafe") || c.includes("coffee")) return "RM12–28";
-      if (c.includes("seafood") || c.includes("shellout")) return "RM30–70";
-      if (c.includes("burger")) return "RM8–18";
-      if (c.includes("indian") || c.includes("mamak")) return "RM6–15";
-      if (c.includes("thai")) return "RM15–35";
-      if (c.includes("dessert") || c.includes("ice_cream")) return "RM5–15";
-      return "RM8–20";
-    }
-
-    // ── CATEGORY EMOJI ────────────────────────────────────────────
-    const CUISINE_EMOJI = {
-      burger:"🍔", indian:"🍛", nasi_kandar:"🍛", mamak:"🍽️",
-      cafe:"☕", coffee_shop:"☕", thai:"🌶️", tom_yam:"🌶️",
-      seafood:"🦐", chinese:"🥢", dessert:"🧁", ice_cream:"🍦",
-      cake:"🎂", american:"🍟", western:"🍟", steak:"🥩",
-      soup:"🥣", satay:"🍢", malaysian:"🍚", nasi_lemak:"🍚",
-      arab:"🍖", middle_eastern:"🍖", kebab:"🍢", noodle:"🍜",
-      restaurant:"🍴",
-    };
-
-    function getEmoji(cuisine) {
-      if (!cuisine) return "🍴";
-      const c = cuisine.toLowerCase().replace(/;.*/,"").trim();
-      return CUISINE_EMOJI[c] || "🍴";
-    }
-
-    // ── STATE ─────────────────────────────────────────────────────
-    let userLat = null;
-    let userLng = null;
-    let activeKeyword = "food";
-    let activeMood    = null;
-    let lastResults   = [];
-
-    // ── HAVERSINE ─────────────────────────────────────────────────
-    function haversine(lat1, lng1, lat2, lng2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLng = (lng2 - lng1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2
-              + Math.cos(lat1 * Math.PI/180)
-              * Math.cos(lat2 * Math.PI/180)
-              * Math.sin(dLng/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    function fmtDist(d) {
-      return d < 1 ? (d * 1000).toFixed(0) + "m" : d.toFixed(1) + "km";
-    }
-
-    // ── OVERPASS API — fetch real restaurants near user ───────────
-    const OVERPASS_MIRRORS = [
-      "https://overpass-api.de/api/interpreter",
-      "https://overpass.kumi.systems/api/interpreter",
-      "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
-    ];
-
-    async function fetchNearby(lat, lng, keyword) {
-      const r = 2000;
-      // Fetch all food places within radius, filter client-side by keyword
-      const query = `[out:json][timeout:20];
-(
-  node["amenity"="restaurant"](around:${r},${lat},${lng});
-  node["amenity"="cafe"](around:${r},${lat},${lng});
-  node["amenity"="fast_food"](around:${r},${lat},${lng});
-  node["amenity"="food_court"](around:${r},${lat},${lng});
-  way["amenity"="restaurant"](around:${r},${lat},${lng});
-  way["amenity"="cafe"](around:${r},${lat},${lng});
-  way["amenity"="fast_food"](around:${r},${lat},${lng});
-);
-out center 60;`;
-
-      let lastErr;
-      for (const mirror of OVERPASS_MIRRORS) {
-        try {
-          const res = await fetch(mirror, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "data=" + encodeURIComponent(query),
-          });
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const json = await res.json();
-          return json.elements || [];
-        } catch (e) {
-          lastErr = e;
-        }
-      }
-      throw lastErr;
-    }
-
-    // ── PARSE OSM ELEMENTS INTO CARDS ────────────────────────────
-    function parseOSM(elements, lat, lng, keyword) {
-      const kw = keyword && keyword !== "food" ? keyword.toLowerCase() : null;
-
-      return elements
-        .map(el => {
-          const tags = el.tags || {};
-          const name = tags.name || tags["name:en"] || tags["name:ms"] || null;
-          if (!name) return null;
-          const elLat = el.lat || (el.center && el.center.lat);
-          const elLng = el.lon || (el.center && el.center.lon);
-          if (!elLat || !elLng) return null;
-          const cuisine = (tags.cuisine || tags.amenity || "").toLowerCase();
-          const nameLower = name.toLowerCase();
-
-          // Client-side keyword filter
-          if (kw) {
-            const match = nameLower.includes(kw) || cuisine.includes(kw);
-            if (!match) return null;
-          }
-
-          const dist = haversine(lat, lng, elLat, elLng);
-          return {
-            name,
-            lat: elLat,
-            lng: elLng,
-            dist,
-            cuisine,
-            category: cuisine.split(";")[0].replace(/_/g, " ") || tags.amenity || "restoran",
-            price: guessPrice(cuisine, name),
-            vibe: getVibe(cuisine),
-            emoji: getEmoji(cuisine),
-            mapsUrl: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(name) + "&location=" + elLat + "," + elLng,
-          };
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.dist - b.dist);
-    }
-
-    // ── RESULT ENGINE — pick 3 from real data ─────────────────────
-    function pickThree(places) {
-      if (!places.length) return [];
-      const used = new Set();
-
-      // 1: nearest
-      const nearest = places[0];
-      used.add(nearest.name);
-
-      // 2: cheapest guess (lowest RM number)
-      const byPrice = [...places].sort((a, b) => {
-        const pa = parseInt(a.price.replace(/[^0-9]/g, "")) || 999;
-        const pb = parseInt(b.price.replace(/[^0-9]/g, "")) || 999;
-        return pa - pb;
-      });
-      const cheapest = byPrice.find(r => !used.has(r.name)) || byPrice[0];
-      used.add(cheapest.name);
-
-      // 3: random from rest
-      const rest = places.filter(r => !used.has(r.name));
-      const gem = rest.length
-        ? rest[Math.floor(Math.random() * Math.min(rest.length, 10))]
-        : places[Math.floor(Math.random() * places.length)];
-
-      return [
-        { ...nearest,  label: "Dekat Gila Dengan Kau", labelEmoji: "📍" },
-        { ...cheapest, label: "Jimat Tapi Sedap",       labelEmoji: "💸" },
-        { ...gem,      label: "Bedal Je Ni",            labelEmoji: "🎲" },
-      ];
-    }
-
-    // ── RENDER RESULTS ────────────────────────────────────────────
-    function renderResults(results) {
-      lastResults = results;
-      const container = document.getElementById('results');
-      const header    = document.getElementById('results-header');
-      const titleEl   = document.getElementById('results-title');
-      const countEl   = document.getElementById('results-count');
-      const empty     = document.getElementById('empty');
-      const stateMsg  = document.getElementById('state-msg');
-      const poweredBy = document.getElementById('powered-by');
-
-      stateMsg.style.display  = "none";
-      empty.style.display     = "none";
-      header.style.display    = "flex";
-      poweredBy.style.display = "block";
-      poweredBy.textContent   = "✦ lapargila — data sebenar dekat kau via OpenStreetMap";
-
-      titleEl.textContent = activeKeyword && activeKeyword !== "food"
-        ? activeKeyword.charAt(0).toUpperCase() + activeKeyword.slice(1) + " Dekat Kau"
-        : "Port Makan Kau";
-      countEl.textContent = results.length + " cadangan";
-
-      container.innerHTML = "";
-      results.forEach((r, i) => {
-        const card = document.createElement('div');
-        card.className = "card" + (i === 0 ? " featured" : "");
-        card.style.animationDelay = (i * 0.08) + "s";
-
-        card.innerHTML = `
-          <div class="card-img">
-            <div class="card-img-placeholder">
-              <span class="placeholder-emoji">${r.emoji}</span>
-              <span class="placeholder-text">${r.category}</span>
-            </div>
-            <div class="card-badges">
-              <div class="badge-left">
-                <span class="badge badge-featured">${r.labelEmoji} ${r.label}</span>
-              </div>
-              <span class="badge-dist">📍 ${fmtDist(r.dist)}</span>
-            </div>
-            <div class="card-img-name">${r.name}</div>
+      <div class="place-card" onclick="openPlace(1)">
+        <div class="place-emoji-box">🥘</div>
+        <div class="place-info">
+          <div class="place-name">Nasi Kandar Pelita</div>
+          <div class="place-meta">
+            <span class="open-dot"></span>
+            <span style="color:#22C55E;font-size:12px">Open 24h</span>
+            <span class="place-meta-dot">·</span>
+            Indian Muslim
+            <span class="place-meta-dot">·</span>
+            RM10–25
           </div>
-          <div class="card-body">
-            <div class="card-row">
-              <span class="cuisine-pill">${r.category}</span>
-              <span class="vicinity-text">${r.price}</span>
-            </div>
-            <p style="font-size:0.82rem;color:var(--text-2);line-height:1.55;margin-bottom:12px;transition:color 0.22s">${r.vibe}</p>
-            <div class="card-actions">
-              <a class="action-btn maps-btn" href="${r.mapsUrl}" target="_blank" rel="noopener noreferrer">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Buka Maps
-              </a>
-              <button class="action-btn phone-btn" onclick="reshuffleResults()" title="Cuba lain">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
-              </button>
-            </div>
+          <div class="place-bottom">
+            <span class="place-dist">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              1.2 km · Ampang
+            </span>
+            <span class="place-video-count">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              7 videos
+            </span>
           </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+        </div>
+      </div>
 
-    // ── UI HELPERS ────────────────────────────────────────────────
-    const LOADING_LINES = [
-      "Cari port makan padu dekat kau 🍜",
-      "Sekejap, tengah scan port sedap 👀",
-      "Tengah fikir apa ngam dengan mood kau…",
-      "Sikit je lagi, confirm port paling best 🔥",
-    ];
-    let loadingIdx = 0, loadingInterval = null;
+      <div class="place-card" onclick="openPlace(2)">
+        <div class="place-emoji-box">☕</div>
+        <div class="place-info">
+          <div class="place-name">Apom Balik Jalan TAR</div>
+          <div class="place-meta">
+            <span class="closed-dot"></span>
+            <span style="color:#EF4444;font-size:12px">Closed</span>
+            <span class="place-meta-dot">·</span>
+            Dessert
+            <span class="place-meta-dot">·</span>
+            RM3–8
+          </div>
+          <div class="place-bottom">
+            <span class="place-dist">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              1.9 km · Masjid India
+            </span>
+            <span class="place-video-count">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              3 videos
+            </span>
+          </div>
+        </div>
+      </div>
 
-    function showLoading() {
-      const el = document.getElementById('state-msg');
-      document.getElementById('results-header').style.display = "none";
-      document.getElementById('empty').style.display          = "none";
-      document.getElementById('results').innerHTML            = "";
-      loadingIdx = 0;
-      el.className = "";
-      el.innerHTML = `
-        <div class="spinner-wrap"><div class="spinner"></div></div>
-        <div class="state-title" id="loading-line">${LOADING_LINES[0]}</div>
-      `;
-      el.style.display = "block";
-      clearInterval(loadingInterval);
-      loadingInterval = setInterval(() => {
-        loadingIdx = (loadingIdx + 1) % LOADING_LINES.length;
-        const line = document.getElementById('loading-line');
-        if (line) line.textContent = LOADING_LINES[loadingIdx];
-      }, 1200);
-    }
+      <div class="place-card" onclick="openPlace(3)">
+        <div class="place-emoji-box">🍱</div>
+        <div class="place-info">
+          <div class="place-name">Kedai Nasi Lemak Antarabangsa</div>
+          <div class="place-meta">
+            <span class="open-dot"></span>
+            <span style="color:#22C55E;font-size:12px">Open</span>
+            <span class="place-meta-dot">·</span>
+            Nasi Lemak
+            <span class="place-meta-dot">·</span>
+            RM5–12
+          </div>
+          <div class="place-bottom">
+            <span class="place-dist">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              2.3 km · Kampung Baru
+            </span>
+            <span class="place-video-count">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              19 videos
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    function showMsg(type, icon, title, sub) {
-      clearInterval(loadingInterval);
-      const el = document.getElementById('state-msg');
-      el.className = type;
-      el.innerHTML = `
-        <span class="state-icon">${icon}</span>
-        <div class="state-title">${title}</div>
-        <p class="state-sub">${sub.replace(/\n/g, '<br>')}</p>
-      `;
-      el.style.display = "block";
-    }
+</main>
 
-    function showError(msg) { showMsg("error", "😭", "Alamak!", msg); }
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="nav-item" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>Explore</span>
+  </button>
+  <button class="nav-center-btn">
+    <div class="nav-center-inner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <span>Submit</span>
+  </button>
+  <button class="nav-item" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span>Saved</span>
+  </button>
+  <button class="nav-item" onclick="setNav(this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
 
-    // ── RESHUFFLE ─────────────────────────────────────────────────
-    let _lastPool = [];
-    function reshuffleResults() {
-      if (!_lastPool.length) return;
-      // Shuffle the pool differently and pick new 3
-      const shuffled = [..._lastPool].sort(() => Math.random() - 0.5);
-      renderResults(pickThree(shuffled));
-    }
+<!-- PLACE DETAIL MODAL -->
+<div class="modal-overlay" id="placeModal" onclick="closeModal(event)">
+  <div class="modal-sheet" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModalBtn()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-place-name" id="modalName">Restoran Weng Hin</div>
+    <div class="modal-meta" id="modalMeta"></div>
+    <div class="modal-video-title">🎬 Creator Videos</div>
+    <div class="modal-video-row" id="modalVideos"></div>
+    <div class="modal-action-row">
+      <button class="modal-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Directions
+      </button>
+      <button class="modal-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Save
+      </button>
+      <button class="modal-btn primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Share
+      </button>
+    </div>
+  </div>
+</div>
 
-    // ── GEOLOCATION ───────────────────────────────────────────────
-    function getLocation(callback) {
-      if (!navigator.geolocation) {
-        userLat = 3.1478; userLng = 101.7001;
-        callback();
-        return;
+<!-- SIGN IN MODAL -->
+<div class="modal-overlay" id="signInModal" onclick="closeSignIn(event)">
+  <div class="modal-sheet" style="position:relative;text-align:center">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="document.getElementById('signInModal').classList.remove('open')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div style="font-size:48px;margin-bottom:16px">🍜</div>
+    <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px;letter-spacing:-0.5px">Join Lapargila</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.5">Save your favourite spots, follow creators<br>and discover hidden gems near you.</div>
+    <button onclick="signInGoogle()" style="width:100%;height:50px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;transition:all 0.2s">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continue with Google
+    </button>
+    <div style="font-size:11px;color:var(--text3);line-height:1.5">By continuing, you agree to our Terms of Service<br>and Privacy Policy</div>
+  </div>
+</div>
+
+<script type="module">
+const places = [
+  {
+    name: "Restoran Weng Hin",
+    meta: ["Open Now", "Chow Kit", "Char Kuey Teow", "RM8–15", "0.8 km away"],
+    emoji: "🍜",
+    bg: "linear-gradient(135deg,#FFE8D6,#FFB994)",
+    videos: [
+      { emoji: "🍜", bg: "linear-gradient(135deg,#FFE8D6,#FFB994)", platform: "TikTok", views: "248K" },
+      { emoji: "🔥", bg: "linear-gradient(135deg,#FFD6D6,#FFB4B4)", platform: "YouTube", views: "91K" },
+      { emoji: "😍", bg: "linear-gradient(135deg,#D6FFE8,#B4F0D6)", platform: "Instagram", views: "33K" },
+    ]
+  },
+  {
+    name: "Nasi Kandar Pelita",
+    meta: ["Open 24h", "Ampang", "Indian Muslim", "RM10–25", "1.2 km away"],
+    emoji: "🥘",
+    bg: "linear-gradient(135deg,#D6F0FF,#89CFF0)",
+    videos: [
+      { emoji: "🥘", bg: "linear-gradient(135deg,#D6F0FF,#89CFF0)", platform: "YouTube", views: "91K" },
+      { emoji: "🌙", bg: "linear-gradient(135deg,#E8D6FF,#C4A8F0)", platform: "TikTok", views: "44K" },
+    ]
+  },
+  {
+    name: "Apom Balik Jalan TAR",
+    meta: ["Opens 6pm", "Masjid India", "Dessert", "RM3–8", "1.9 km away"],
+    emoji: "🍡",
+    bg: "linear-gradient(135deg,#D6FFE8,#89EFC0)",
+    videos: [
+      { emoji: "🍡", bg: "linear-gradient(135deg,#D6FFE8,#89EFC0)", platform: "Instagram", views: "55K" },
+    ]
+  },
+  {
+    name: "Kedai Nasi Lemak Antarabangsa",
+    meta: ["Open Now", "Kampung Baru", "Nasi Lemak", "RM5–12", "2.3 km away"],
+    emoji: "🍱",
+    bg: "linear-gradient(135deg,#FFF8D6,#FFE89E)",
+    videos: [
+      { emoji: "🍱", bg: "linear-gradient(135deg,#FFF8D6,#FFE89E)", platform: "TikTok", views: "312K" },
+      { emoji: "🌶️", bg: "linear-gradient(135deg,#FFD6D6,#FFB4B4)", platform: "YouTube", views: "128K" },
+      { emoji: "😋", bg: "linear-gradient(135deg,#D6F0FF,#A8D8F0)", platform: "Instagram", views: "78K" },
+    ]
+  }
+];
+
+const allPlaces = [
+  ...places,
+  { name: "Fatty Crab Taman Desa", meta: ["Open Now", "Taman Desa", "Seafood", "RM30–80", "4.1 km away"], emoji: "🦀" },
+  { name: "Roti Canai Transfer Road", meta: ["Open Now", "KLCC Area", "Mamak", "RM2–8", "3.2 km away"], emoji: "🫓" },
+  { name: "Village Park Nasi Lemak", meta: ["Open Now", "Damansara Uptown", "Nasi Lemak", "RM8–20", "6.5 km away"], emoji: "🍳" },
+];
+
+function openPlace(index) {
+  const p = places[index];
+  document.getElementById('modalName').textContent = p.name;
+  const metaDiv = document.getElementById('modalMeta');
+  metaDiv.innerHTML = p.meta.map((m, i) => {
+    if (i === 0) return `<span style="color:#22C55E;display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block"></span>${m}</span>`;
+    return `<span style="color:var(--text2)">${m}</span>`;
+  }).join('<span style="color:var(--border)">·</span>');
+
+  const videosDiv = document.getElementById('modalVideos');
+  videosDiv.innerHTML = p.videos.map(v => `
+    <div class="modal-video-thumb" style="background:${v.bg}">
+      <span style="font-size:28px">${v.emoji}</span>
+      <div class="modal-video-play">
+        <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('placeModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('placeModal')) closeModalBtn();
+}
+function closeModalBtn() {
+  document.getElementById('placeModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function openSignIn() {
+  document.getElementById('signInModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSignIn(e) {
+  if (e.target === document.getElementById('signInModal')) {
+    document.getElementById('signInModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+// ─── FIREBASE CONFIG ───────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDTWIgHewIhvdmnrnzesQPvR3CaT2-VMX8",
+  authDomain: "lapargila-9277a.firebaseapp.com",
+  projectId: "lapargila-9277a",
+  storageBucket: "lapargila-9277a.firebasestorage.app",
+  messagingSenderId: "139980327649",
+  appId: "1:139980327649:web:25bbcaee2d1ff8d63e05a0",
+  measurementId: "G-S5173RT0M9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// ─── GOOGLE PLACES API KEY ─────────────────────────────────────────
+// Replace with your actual Google Places API key
+const PLACES_API_KEY = "AIzaSyAYhh3ztkHagOtqsv9X-Y7inwpQs9F7MWY";
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days cache
+
+// ─── AUTH STATE ────────────────────────────────────────────────────
+onAuthStateChanged(auth, (user) => {
+  const banner = document.getElementById('signinBanner');
+  const avatarBtn = document.querySelector('.avatar-btn');
+  if (user) {
+    banner.style.display = 'none';
+    const initials = user.displayName
+      ? user.displayName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()
+      : '??';
+    avatarBtn.textContent = initials;
+    avatarBtn.style.background = 'var(--accent)';
+    avatarBtn.style.color = 'white';
+    avatarBtn.onclick = () => signOutUser();
+  } else {
+    banner.style.display = 'flex';
+    avatarBtn.textContent = 'AZ';
+    avatarBtn.style.background = 'var(--accent-bg)';
+    avatarBtn.style.color = 'var(--accent)';
+    avatarBtn.onclick = () => openSignIn();
+  }
+});
+
+// ─── SIGN IN ───────────────────────────────────────────────────────
+async function signInGoogle() {
+  try {
+    document.getElementById('signInModal').classList.remove('open');
+    document.body.style.overflow = '';
+    await signInWithPopup(auth, provider);
+  } catch (err) {
+    console.error('Sign in failed:', err);
+    showToast('Sign in failed. Please try again.');
+  }
+}
+
+async function signOutUser() {
+  if (confirm('Sign out of Lapargila?')) {
+    await signOut(auth);
+    showToast('Signed out.');
+  }
+}
+
+// ─── GOOGLE PLACES SEARCH WITH FIRESTORE CACHE ────────────────────
+async function searchPlacesWithCache(query) {
+  const cacheKey = query.toLowerCase().trim().replace(/\s+/g, '_');
+  const cacheRef = doc(db, 'places_cache', cacheKey);
+
+  // 1. Check Firestore cache first
+  try {
+    const cached = await getDoc(cacheRef);
+    if (cached.exists()) {
+      const data = cached.data();
+      const age = Date.now() - data.cachedAt.toMillis();
+      if (age < CACHE_TTL_MS) {
+        console.log('✅ Served from cache:', cacheKey);
+        return data.results;
       }
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          userLat = pos.coords.latitude;
-          userLng = pos.coords.longitude;
-          document.getElementById('location-text').textContent = "Kawasan Kau";
-          callback();
-        },
-        () => {
-          userLat = 3.1478; userLng = 101.7001;
-          document.getElementById('location-text').textContent = "KL (default)";
-          callback();
-        },
-        { timeout: 8000, enableHighAccuracy: false }
+    }
+  } catch (e) {
+    console.warn('Cache read error:', e);
+  }
+
+  // 2. If no cache or expired → call Google Places API
+  if (!PLACES_API_KEY || PLACES_API_KEY === 'YOUR_GOOGLE_PLACES_API_KEY') {
+    showToast('Add your Google Places API key to enable live search.');
+    return [];
+  }
+
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' restaurant Malaysia')}&key=${PLACES_API_KEY}`;
+    const resp = await fetch(url);
+    const json = await resp.json();
+    const results = (json.results || []).slice(0, 10).map(p => ({
+      place_id: p.place_id,
+      name: p.name,
+      address: p.formatted_address,
+      rating: p.rating,
+      open_now: p.opening_hours?.open_now ?? null,
+      types: p.types?.slice(0, 3) || [],
+      lat: p.geometry?.location?.lat,
+      lng: p.geometry?.location?.lng,
+    }));
+
+    // 3. Save to Firestore cache
+    await setDoc(cacheRef, { results, cachedAt: serverTimestamp(), query });
+    console.log('💾 Cached to Firestore:', cacheKey);
+    return results;
+  } catch (err) {
+    console.error('Places API error:', err);
+    showToast('Search failed. Please try again.');
+    return [];
+  }
+}
+
+// ─── LIVE SEARCH WITH DEBOUNCE ────────────────────────────────────
+let searchTimer = null;
+async function onSearch(val) {
+  const clearBtn = document.getElementById('searchClear');
+  const resultsDiv = document.getElementById('searchResults');
+  const mainContent = document.getElementById('mainContent');
+
+  if (val.trim().length < 2) {
+    clearSearch();
+    return;
+  }
+
+  clearBtn.classList.add('visible');
+  resultsDiv.classList.add('visible');
+  mainContent.style.display = 'none';
+
+  // Show loading state
+  document.getElementById('resultLabel').innerHTML = `Searching <strong>"${val}"</strong>…`;
+  document.getElementById('resultList').innerHTML = `
+    <div style="text-align:center;padding:40px 20px;color:var(--text3)">
+      <div style="font-size:32px;margin-bottom:12px">🔍</div>
+      <div style="font-size:14px;color:var(--text2)">Finding places…</div>
+    </div>`;
+
+  // Debounce — wait 600ms after user stops typing
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    // Try live API first, fall back to local mock data
+    let results = await searchPlacesWithCache(val);
+
+    // If no API key yet, fall back to local mock search
+    if (results.length === 0) {
+      const filtered = allPlaces.filter(p =>
+        p.name.toLowerCase().includes(val.toLowerCase()) ||
+        (p.meta && p.meta.some(m => m.toLowerCase().includes(val.toLowerCase())))
       );
+      renderLocalResults(filtered, val);
+      return;
     }
 
-    // ── MAIN SEARCH ───────────────────────────────────────────────
-    async function doSearch() {
-      showLoading();
-      try {
-        const elements = await fetchNearby(userLat, userLng, activeKeyword);
-        clearInterval(loadingInterval);
+    renderApiResults(results, val);
+  }, 600);
+}
 
-        if (!elements.length) {
-          showMsg("error", "🤔", "Takde result bro",
-            "Takde tempat makan jumpa dalam 2km.\nCuba keyword lain atau gerak sikit.");
-          return;
-        }
+function renderApiResults(results, query) {
+  document.getElementById('resultLabel').innerHTML =
+    `Showing <strong>${results.length}</strong> results for "<strong>${query}</strong>"`;
 
-        // Try keyword filter first
-        let places = parseOSM(elements, userLat, userLng, activeKeyword);
+  const list = document.getElementById('resultList');
+  if (results.length === 0) {
+    list.innerHTML = emptyState();
+    return;
+  }
 
-        // If keyword filter returns nothing, show all results nearby instead
-        if (!places.length) {
-          places = parseOSM(elements, userLat, userLng, null);
-        }
+  list.innerHTML = results.map(p => `
+    <div class="place-card" style="margin-bottom:10px">
+      <div class="place-emoji-box">🍽️</div>
+      <div class="place-info">
+        <div class="place-name">${p.name}</div>
+        <div class="place-meta">
+          ${p.open_now === true
+            ? '<span class="open-dot"></span><span style="color:#22C55E;font-size:12px">Open</span>'
+            : p.open_now === false
+            ? '<span class="closed-dot"></span><span style="color:#EF4444;font-size:12px">Closed</span>'
+            : ''}
+          <span class="place-meta-dot">·</span>
+          ${p.rating ? '⭐ ' + p.rating : 'No rating'}
+        </div>
+        <div class="place-dist">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${p.address ? p.address.substring(0, 40) + '…' : 'Malaysia'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 
-        if (!places.length) {
-          showMsg("error", "😅", "Takde nama kedai",
-            "Jumpa spots tapi takde nama kedai.\nCuba filter lain.");
-          return;
-        }
+function renderLocalResults(filtered, val) {
+  document.getElementById('resultLabel').innerHTML =
+    `Showing <strong>${filtered.length}</strong> results for "<strong>${val}</strong>"`;
+  const list = document.getElementById('resultList');
+  if (filtered.length === 0) { list.innerHTML = emptyState(); return; }
+  list.innerHTML = filtered.map((p, i) => `
+    <div class="place-card" style="margin-bottom:10px" onclick="openPlace(${i < places.length ? i : 0})">
+      <div class="place-emoji-box">${p.emoji}</div>
+      <div class="place-info">
+        <div class="place-name">${p.name}</div>
+        <div class="place-meta">
+          <span class="open-dot"></span>
+          <span style="color:#22C55E;font-size:12px">${p.meta[0]}</span>
+          <span class="place-meta-dot">·</span>${p.meta[2]}
+        </div>
+        <div class="place-dist">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${p.meta[4]}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 
-        _lastPool = places;
-        renderResults(pickThree(places));
+function emptyState() {
+  return `<div style="text-align:center;padding:40px 20px;color:var(--text3)">
+    <div style="font-size:40px;margin-bottom:12px">🍽️</div>
+    <div style="font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px">No results found</div>
+    <div style="font-size:13px">Try another keyword or browse categories</div>
+  </div>`;
+}
 
-      } catch (err) {
-        clearInterval(loadingInterval);
-        showError("Tak dapat connect. Check internet kau pastu cuba lagi.\n\n(" + (err.message||"unknown error") + ")");
-      }
+// ─── TOAST NOTIFICATION ───────────────────────────────────────────
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;white-space:nowrap;transition:opacity 0.3s;font-family:'DM Sans',sans-serif`;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 3000);
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  const btn = document.getElementById('themeBtn');
+  btn.innerHTML = isDark
+    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+}
+
+// Set dark mode icon initially
+document.getElementById('themeBtn').innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function filterCat(el, cat) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+let nearbyActive = true;
+function toggleNearby() {
+  nearbyActive = !nearbyActive;
+  const btn = document.getElementById('nearbyBtn');
+  btn.classList.toggle('active', nearbyActive);
+}
+
+function onSearch(val) {
+  const clearBtn = document.getElementById('searchClear');
+  const resultsDiv = document.getElementById('searchResults');
+  const mainContent = document.getElementById('mainContent');
+
+  if (val.trim().length > 0) {
+    clearBtn.classList.add('visible');
+    resultsDiv.classList.add('visible');
+    mainContent.style.display = 'none';
+
+    const filtered = allPlaces.filter(p =>
+      p.name.toLowerCase().includes(val.toLowerCase()) ||
+      (p.meta && p.meta.some(m => m.toLowerCase().includes(val.toLowerCase())))
+    );
+
+    document.getElementById('resultLabel').innerHTML = `Showing <strong>${filtered.length}</strong> results for "<strong>${val}</strong>"`;
+    const list = document.getElementById('resultList');
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text3)">
+        <div style="font-size:40px;margin-bottom:12px">🍽️</div>
+        <div style="font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px">No results found</div>
+        <div style="font-size:13px">Try another keyword or browse categories</div>
+      </div>`;
+      return;
     }
 
-    // ── WIRE BUTTONS ──────────────────────────────────────────────
-    const searchBtn   = document.getElementById('search-btn');
-    const keywordInput = document.getElementById('keyword');
+    list.innerHTML = filtered.map((p, i) => `
+      <div class="place-card" style="margin-bottom:10px" onclick="openPlace(${i < places.length ? i : 0})">
+        <div class="place-emoji-box">${p.emoji}</div>
+        <div class="place-info">
+          <div class="place-name">${p.name}</div>
+          <div class="place-meta">
+            <span class="open-dot"></span>
+            <span style="color:#22C55E;font-size:12px">${p.meta[0]}</span>
+            <span class="place-meta-dot">·</span>
+            ${p.meta[2]}
+          </div>
+          <div class="place-dist">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${p.meta[4]}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    clearSearch();
+  }
+}
 
-    searchBtn.addEventListener('click', () => {
-      activeKeyword = keywordInput.value.trim().toLowerCase() || "food";
-      doSearch();
-    });
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  document.getElementById('searchResults').classList.remove('visible');
+  document.getElementById('mainContent').style.display = 'block';
+}
 
-    keywordInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        activeKeyword = keywordInput.value.trim().toLowerCase() || "food";
-        doSearch();
-      }
-    });
+// ─── EXPOSE TO WINDOW (needed for onclick in HTML) ────────────────
+window.signInGoogle = signInGoogle;
+window.openSignIn = openSignIn;
+window.openPlace = openPlace;
+window.closeModalBtn = closeModalBtn;
+window.closeModal = closeModal;
+window.closeSignIn = closeSignIn;
+window.toggleTheme = toggleTheme;
+window.setNav = setNav;
+window.filterCat = filterCat;
+window.toggleNearby = toggleNearby;
+window.onSearch = onSearch;
+window.clearSearch = clearSearch;
 
-    document.querySelectorAll('.filter-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        activeKeyword = chip.dataset.kw || "food";
-        keywordInput.value = "";
-        doSearch();
-      });
-    });
-
-    function quickSearch(kw) {
-      activeKeyword = kw;
-      keywordInput.value = kw;
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      doSearch();
-    }
-
-    // ── AUTO INIT ─────────────────────────────────────────────────
-    window.addEventListener('load', () => {
-      document.getElementById('empty').style.display = "none";
-      showLoading();
-      getLocation(() => doSearch());
-    });
-
-    // PLACEHOLDER — kept so old references don't crash
-    const RESTAURANTS = [
-      // MAMAK / INDIAN MUSLIM
-      { name:"Restoran Pelita Nasi Kandar", lat:3.1580, lng:101.7069, category:"mamak", price:"RM8–15",  vibe:"Mamak klasik 24 jam. Teh tarik dia memang gila sedap." },
-      { name:"Nasi Kandar Line Clear",      lat:3.1469, lng:101.6955, category:"mamak", price:"RM10–18", vibe:"Nasi kandar port orang tahu. Queue panjang tapi berbaloi." },
-      { name:"Restoran Kayu Nasi Kandar",   lat:3.1501, lng:101.7020, category:"mamak", price:"RM9–16",  vibe:"24 jam. Ko lapar pukul 3 pagi pun dia buka." },
-      { name:"Raju's Banana Leaf",          lat:3.1460, lng:101.6970, category:"mamak", price:"RM12–20", vibe:"Banana leaf padu. Lauk dia penuh sampai tak nampak daun." },
-      { name:"Anjappar Chettinad",          lat:3.1555, lng:101.7105, category:"mamak", price:"RM15–25", vibe:"Indian food level lain. Pedas dia bukan main-main." },
-
-      // NASI LEMAK
-      { name:"Village Park Restaurant",     lat:3.1234, lng:101.6345, category:"nasi lemak", price:"RM8–12",  vibe:"Nasi lemak ayam goreng paling trending KL. Queue mesti panjang." },
-      { name:"Nasi Lemak Wanjo",            lat:3.1488, lng:101.6935, category:"nasi lemak", price:"RM5–10",  vibe:"Murah gila. Nasi lemak basic tapi tak pernah hampa." },
-      { name:"Nasi Lemak Antarabangsa",     lat:3.1372, lng:101.6963, category:"nasi lemak", price:"RM6–11",  vibe:"24 jam. Sambal dia level dewa. Makan malam pun okay." },
-      { name:"Nasi Lemak Bumbung",          lat:3.1608, lng:101.7115, category:"nasi lemak", price:"RM5–9",   vibe:"Hidden gem kawasan Ampang. Orang local je tahu." },
-
-      // BURGER BAKAR
-      { name:"Burger Bakar Abang Burn",     lat:3.1312, lng:101.6877, category:"burger", price:"RM8–14",  vibe:"Burger bakar paling hype KL. Baru buka terus habis." },
-      { name:"Ramly Burger Uncle Ahmad",    lat:3.1456, lng:101.7234, category:"burger", price:"RM4–8",   vibe:"OG burger tepi jalan. Murah meriah. Portion memang besar." },
-      { name:"The Burger Lab",              lat:3.1180, lng:101.6760, category:"burger", price:"RM18–28", vibe:"Smash burger level artisan. Mahal sikit tapi worth it." },
-      { name:"Myeong Dong Burger",          lat:3.1502, lng:101.7010, category:"burger", price:"RM12–20", vibe:"Korean fusion burger. Instagrammable gila. Dating cun." },
-
-      // TOMYAM / THAI
-      { name:"Tomyam Seafood Pak Su",       lat:3.1688, lng:101.7045, category:"tomyam", price:"RM15–30", vibe:"Tomyam pedas gila. Sikit je kau dah peluh satu badan." },
-      { name:"Restoran Baan Thai",          lat:3.1225, lng:101.6598, category:"tomyam", price:"RM20–40", vibe:"Thai masak authentik. Sambal hijau dia buat ketagih." },
-      { name:"Thai Village",                lat:3.1490, lng:101.7180, category:"tomyam", price:"RM18–35", vibe:"Port lepak group besar. Order banyak-banyak." },
-
-      // CAFE / HEALING
-      { name:"VCR Cafe",                    lat:3.1425, lng:101.7102, category:"cafe", price:"RM15–30", vibe:"Aesthetic gila. Coffee dia strong. Perfect bila nak kerja." },
-      { name:"Feeka Coffee Roasters",       lat:3.1509, lng:101.7035, category:"cafe", price:"RM12–25", vibe:"Instagrammable. Kopi specialty. Healing jap dari kesibukan." },
-      { name:"Pulp by Papa Palheta",        lat:3.1388, lng:101.6960, category:"cafe", price:"RM12–22", vibe:"Coffee serious. Rasa macam duduk Europe sekejap." },
-      { name:"Butter + Beans",              lat:3.1233, lng:101.6355, category:"cafe", price:"RM20–35", vibe:"Brunch vibes. Portion besar. Instagrammable confirm." },
-      { name:"Percolate",                   lat:3.1580, lng:101.7265, category:"cafe", price:"RM15–28", vibe:"Hidden cafe best kat Ampang. Orang repeat sini selalu." },
-
-      // CHAR KUEY TEOW / KOPITIAM
-      { name:"CKT Ah Leng Georgetown",      lat:3.1356, lng:101.6895, category:"chinese", price:"RM8–14",  vibe:"Char kuey teow wok hei dia paling gila. Queue awal." },
-      { name:"Kedai Kopi Hong Ngek",        lat:3.1289, lng:101.6724, category:"kopitiam", price:"RM5–12",  vibe:"Kopitiam OG. Roti bakar mentega. Teh O ais limau best." },
-      { name:"Sek Yuen Restaurant",         lat:3.1444, lng:101.7153, category:"chinese", price:"RM20–45", vibe:"Chinese food classic KL sejak tahun 50an. Heritage betul." },
-      { name:"Kedai Makan Kim Gary",        lat:3.1522, lng:101.7040, category:"chinese", price:"RM15–28", vibe:"HK cafe vibes. Mee soup dia comfort food gila." },
-
-      // SUP GEARBOX / BERAT
-      { name:"Sup Hamid Sup Utara",         lat:3.1670, lng:101.7210, category:"sup", price:"RM10–20", vibe:"Sup gearbox paling legendary area Chow Kit. Kenyang padu." },
-      { name:"Sup Tulang Pak Usop",         lat:3.1345, lng:101.7089, category:"sup", price:"RM8–15",  vibe:"Makan malam lawat sini. Kuah dia kaw gila. Portion besar." },
-
-      // SATAY
-      { name:"Satay Kajang Haji Samuri",    lat:2.9943, lng:101.7889, category:"satay", price:"RM2–3/cucuk", vibe:"Satay paling famous Malaysia. Wajib datang sekali." },
-      { name:"Satay Warisan Tok Ayah",      lat:3.1455, lng:101.6910, category:"satay", price:"RM2/cucuk",   vibe:"Satay best kawasan KL. Sos kacang dia pekat sempurna." },
-
-      // MEE TARIK / WESTERN MURAH
-      { name:"Mee Tarik Af Restoran",       lat:3.1590, lng:101.7045, category:"mee tarik", price:"RM10–16", vibe:"Handmade pulled noodles. Unik dalam KL ni." },
-      { name:"Dave's Deli",                 lat:3.1200, lng:101.6622, category:"western", price:"RM18–32", vibe:"Western murah tapi portion tak masuk akal besarnya." },
-      { name:"Absolute Thai",               lat:3.1478, lng:101.7058, category:"thai", price:"RM15–30", vibe:"Thai food sederhana tapi consistent. Port lunch office ramai." },
-
-      // SHELLOUT / SEAFOOD
-      { name:"Pak John Seafood",            lat:3.1125, lng:101.6454, category:"shellout", price:"RM30–60", vibe:"Shellout seafood. Makan tangan. Memang ngam lepak member." },
-      { name:"Fatty Crab",                  lat:3.1389, lng:101.6867, category:"shellout", price:"RM40–80", vibe:"Ketam masak lemak chili padi. Makan ramai-ramai best." },
-      { name:"Mr Sotong",                   lat:3.1602, lng:101.7148, category:"shellout", price:"RM25–50", vibe:"Sotong goreng tepung viral. Portion gila besar." },
-
-      // DESSERT VIRAL
-      { name:"Cendol Pak Buyung",           lat:3.1411, lng:101.6980, category:"dessert", price:"RM4–8",   vibe:"Cendol terbaik KL. Simple tapi sedap ya ampun." },
-      { name:"Bingsu HanBingsu",            lat:3.1544, lng:101.7064, category:"dessert", price:"RM18–28", vibe:"Korean shaved ice. Viral TikTok. Sweet gila tapi best." },
-      { name:"Apam Balik Uncle Nasi",       lat:3.1367, lng:101.7001, category:"dessert", price:"RM3–6",   vibe:"Apam balik crispy penuh jagung. Snack legend." },
-      { name:"Tealive KLCC",                lat:3.1578, lng:101.7124, category:"dessert", price:"RM8–15",  vibe:"Bubble tea fix bila dah teringat. Dekat je mesti ada." },
-
-      // ROTI CANAI / NASI CAMPUR
-      { name:"Roti Canai Transfer Road",    lat:3.1480, lng:101.6930, category:"roti canai", price:"RM2–6",   vibe:"Roti canai best KL. Kari dia pekat. Sarapan paling ngam." },
-      { name:"Kedai Makan Tengah Hari",     lat:3.1305, lng:101.6781, category:"nasi campur", price:"RM7–12",  vibe:"Nasi campur murah. Lauk dia banyak. Port makan lunch." },
-      { name:"Nasi Arab Yasmin",            lat:3.1644, lng:101.7033, category:"nasi arab", price:"RM15–25", vibe:"Nasi mandi + lamb. Kenyang gila lepas makan ni." },
-
-      // MAGGI GORENG / LATE NIGHT
-      { name:"Maggi Goreng Pak Din",        lat:3.1512, lng:101.7085, category:"mamak", price:"RM5–8",   vibe:"Maggi goreng pukul 2 pagi ni lah jawapan dia. 24 jam." },
-      { name:"Mee Goreng Mamak Kassim",     lat:3.1387, lng:101.7162, category:"mamak", price:"RM6–10",  vibe:"Mee goreng level mamak terbaik. Pedas dia betul-betul." },
-
-      // WESTERN / BRUNCH
-      { name:"Limapulo",                    lat:3.1265, lng:101.6598, category:"western", price:"RM25–45", vibe:"Brunch spot aesthetic. Dating pun cun. Weekend ramai." },
-      { name:"The Social",                  lat:3.1488, lng:101.7009, category:"western", price:"RM22–40", vibe:"Port lepak malam, ada drinks. Vibe dia chill gila." },
-    ];
-
-    // ══════════════════════════════════════════════════════════════
-    // LAPARGILA LOGIC END
-    // ══════════════════════════════════════════════════════════════
-  </script>
+// System dark mode detection
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('themeBtn').innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+}
+</script>
 </body>
 </html>
