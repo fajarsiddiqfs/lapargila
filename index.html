@@ -1208,7 +1208,7 @@ import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
 
 const firebaseConfig = {
   apiKey: "AIzaSyDTWIgHewIhvdmnrnzesQPvR3CaT2-VMX8",
-  authDomain: "lapargila.netlify.app",
+  authDomain: "lapargila-9277a.firebaseapp.com",
   projectId: "lapargila-9277a",
   storageBucket: "lapargila-9277a.firebasestorage.app",
   messagingSenderId: "139980327649",
@@ -1287,14 +1287,14 @@ async function searchPlacesWithCache(query) {
     console.warn('Cache read error:', e);
   }
 
-  // 2. If no cache or expired → call Google Places API
+  // 2. If no cache or expired → call Google Places API via CORS proxy
   if (!PLACES_API_KEY || PLACES_API_KEY === 'YOUR_GOOGLE_PLACES_API_KEY') {
     showToast('Add your Google Places API key to enable live search.');
     return [];
   }
 
   try {
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' restaurant Malaysia')}&key=${PLACES_API_KEY}`;
+    const url = `https://corsproxy.io/?${encodeURIComponent('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + encodeURIComponent(query + ' restaurant Kuala Lumpur') + '&key=' + PLACES_API_KEY)}`;
     const resp = await fetch(url);
     const json = await resp.json();
     const results = (json.results || []).slice(0, 10).map(p => ({
