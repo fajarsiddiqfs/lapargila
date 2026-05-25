@@ -1471,63 +1471,6 @@ function toggleNearby() {
   btn.classList.toggle('active', nearbyActive);
 }
 
-function onSearch(val) {
-  const clearBtn = document.getElementById('searchClear');
-  const resultsDiv = document.getElementById('searchResults');
-  const mainContent = document.getElementById('mainContent');
-
-  if (val.trim().length > 0) {
-    clearBtn.classList.add('visible');
-    resultsDiv.classList.add('visible');
-    mainContent.style.display = 'none';
-
-    const filtered = allPlaces.filter(p =>
-      p.name.toLowerCase().includes(val.toLowerCase()) ||
-      (p.meta && p.meta.some(m => m.toLowerCase().includes(val.toLowerCase())))
-    );
-
-    document.getElementById('resultLabel').innerHTML = `Showing <strong>${filtered.length}</strong> results for "<strong>${val}</strong>"`;
-    const list = document.getElementById('resultList');
-
-    if (filtered.length === 0) {
-      list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text3)">
-        <div style="font-size:40px;margin-bottom:12px">🍽️</div>
-        <div style="font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px">No results found</div>
-        <div style="font-size:13px">Try another keyword or browse categories</div>
-      </div>`;
-      return;
-    }
-
-    list.innerHTML = filtered.map((p, i) => `
-      <div class="place-card" style="margin-bottom:10px" onclick="openPlace(${i < places.length ? i : 0})">
-        <div class="place-emoji-box">${p.emoji}</div>
-        <div class="place-info">
-          <div class="place-name">${p.name}</div>
-          <div class="place-meta">
-            <span class="open-dot"></span>
-            <span style="color:#22C55E;font-size:12px">${p.meta[0]}</span>
-            <span class="place-meta-dot">·</span>
-            ${p.meta[2]}
-          </div>
-          <div class="place-dist">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            ${p.meta[4]}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  } else {
-    clearSearch();
-  }
-}
-
-function clearSearch() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('searchClear').classList.remove('visible');
-  document.getElementById('searchResults').classList.remove('visible');
-  document.getElementById('mainContent').style.display = 'block';
-}
-
 // ─── EXPOSE TO WINDOW (needed for onclick in HTML) ────────────────
 window.signInGoogle = signInGoogle;
 window.openSignIn = openSignIn;
