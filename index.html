@@ -1309,7 +1309,7 @@ async function searchPlacesWithCache(query) {
       name: p.displayName,
       address: p.formattedAddress,
       rating: p.rating,
-      open_now: p.regularOpeningHours?.isOpen() ?? null,
+      open_now: p.regularOpeningHours ? p.regularOpeningHours.isOpen() : null,
       types: p.primaryType ? [p.primaryType] : [],
       lat: p.location?.lat(),
       lng: p.location?.lng(),
